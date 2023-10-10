@@ -68,12 +68,34 @@ public static class Phrases
             { 60, "sixty" },
         };
 
-    public static (
-        Dictionary<string, List<string>>,
-        Dictionary<string, List<string>>
-    ) GeneratePhrases()
+    private static List<string> AppendAM(string timePhrase)
     {
-        var timePhrases = new Dictionary<string, List<string>>();
+        return new List<string>
+        {
+            $"At {timePhrase}am",
+            $"At {timePhrase}a.m.",
+            $"At {timePhrase} am",
+            $"At {timePhrase} a.m.",
+            $"At {timePhrase}  am",
+            $"At {timePhrase}  a.m."
+        };
+    }
+
+    private static List<string> AppendPM(string timePhrase)
+    {
+        return new List<string>
+        {
+            $"At {timePhrase}pm",
+            $"At {timePhrase}p.m.",
+            $"At {timePhrase} pm",
+            $"At {timePhrase} p.m.",
+            $"At {timePhrase}  pm",
+            $"At {timePhrase}  p.m."
+        };
+    }
+
+    public static Dictionary<string, List<string>> GeneratePhrases()
+    {
         var timePhrasesOneOf = new Dictionary<string, List<string>>();
 
         var startOfDay = DateTime.Now.Date;
@@ -81,159 +103,316 @@ public static class Phrases
 
         while (startOfDay < endOfDay)
         {
-            var currentTimePhrasesOneOf = new List<string>();
-            if (startOfDay.Hour < 13)
-            {
-                currentTimePhrasesOneOf.Add($"{startOfDay:h:mm}am");
-                currentTimePhrasesOneOf.Add($"{startOfDay:h:mm}a.m.");
-                currentTimePhrasesOneOf.Add($"{startOfDay:h:mm} am");
-                currentTimePhrasesOneOf.Add($"{startOfDay:h:mm} a.m.");
-                currentTimePhrasesOneOf.Add($"{startOfDay:h:mm}  am");
-                currentTimePhrasesOneOf.Add($"{startOfDay:h:mm}  a.m.");
-            }
-            else
-            {
-                currentTimePhrasesOneOf.Add($"{startOfDay:h:mm}pm");
-                currentTimePhrasesOneOf.Add($"{startOfDay:h:mm}p.m.");
-                currentTimePhrasesOneOf.Add($"{startOfDay:h:mm} pm");
-                currentTimePhrasesOneOf.Add($"{startOfDay:h:mm} p.m.");
-                currentTimePhrasesOneOf.Add($"{startOfDay:h:mm}  pm");
-                currentTimePhrasesOneOf.Add($"{startOfDay:h:mm}  p.m.");
-            }
-            // currentTimePhrasesOneOf.Add($"{startOfDay:h:mm}");
-
-            var currentTimePhrases = new List<string>();
-            currentTimePhrases.Add(startOfDay.ToString("HH:mm"));
-
             var hourWord = numberToWord[startOfDay.Hour];
-            if (startOfDay.Minute > 0)
+            var minuteWord = numberToWord[startOfDay.Minute];
+            var minutePlural = startOfDay.Minute == 1 ? "minute" : "minutes";
+
+            var currentTimePhrasesOneOf = new List<string>();
+
+            // AM
+            if (startOfDay.Hour <= 12)
             {
-                var minuteWord = numberToWord[startOfDay.Minute];
+                if (startOfDay.Minute == 0)
+                {
+                    currentTimePhrasesOneOf.AddRange(AppendAM($"At {hourWord}"));
+                }
+                else if (startOfDay.Minute < 4)
+                {
+                    currentTimePhrasesOneOf.AddRange(AppendAM($"just after {startOfDay.Hour}"));
+                    currentTimePhrasesOneOf.AddRange(AppendAM($"just after {hourWord}"));
+                }
 
-                var minutePlural = startOfDay.Minute == 1 ? "minute" : "minutes";
+                currentTimePhrasesOneOf.AddRange(AppendAM($"{startOfDay:h:mm}"));
+            }
 
-                // PAST AFTER
+            if (startOfDay.Hour <= 12 && startOfDay.Minute > 0)
+            {
                 // twelve minute(s) past nineteen
-                currentTimePhrases.Add($"{minuteWord} {minutePlural} past {hourWord}");
+                currentTimePhrasesOneOf.AddRange(
+                    AppendAM($"{minuteWord} {minutePlural} past {hourWord}")
+                );
 
                 // twelve minute(s) after nineteen
-                currentTimePhrases.Add($"{minuteWord} {minutePlural} after {hourWord}");
-
-                // 12 minute(s) past nineteen
-                // currentTimePhrases.Add($"{startOfDay.Minute} {minutePlural} past {hourWord}");
-
-                // 12 minute(s) after nineteen
-                // currentTimePhrases.Add($"{startOfDay.Minute} {minutePlural} after {hourWord}");
-
-                // twelve minute(s) past 19
-                // currentTimePhrases.Add($"{minuteWord} {minutePlural} past {startOfDay.Hour}");
-
-                // twelve minute(s) after 19
-                // currentTimePhrases.Add($"{minuteWord} {minutePlural} after {startOfDay.Hour}");
-
-                // 12 minute(s) past 19
-                // currentTimePhrases.Add(
-                //     $"{startOfDay.Minute} {minutePlural} past {startOfDay.Hour}"
-                // );
-
-                // 12 minute(s) after 19
-                // currentTimePhrases.Add(
-                //     $"{startOfDay.Minute} {minutePlural} after {startOfDay.Hour}"
-                // );
+                currentTimePhrasesOneOf.AddRange(
+                    AppendAM($"{minuteWord} {minutePlural} after {hourWord}")
+                );
 
                 // twelve past nineteen
-                currentTimePhrases.Add($"{minuteWord} past {hourWord}");
+                currentTimePhrasesOneOf.AddRange(AppendAM($"{minuteWord} past {hourWord}"));
 
                 // twelve after nineteen
-                currentTimePhrases.Add($"{minuteWord} after {hourWord}");
+                currentTimePhrasesOneOf.AddRange(AppendAM($"{minuteWord} after {hourWord}"));
+            }
 
-                // 12 past nineteen
-                // currentTimePhrases.Add($"{startOfDay.Minute} past {hourWord}");
-
-                // 12 after nineteen
-                // currentTimePhrases.Add($"{startOfDay.Minute} after {hourWord}");
-
-                // twelve past 19
-                // currentTimePhrases.Add($"{minuteWord} past {startOfDay.Hour}");
-
-                // twelve after 19
-                // currentTimePhrases.Add($"{minuteWord} after {startOfDay.Hour}");
-
-                // 12 past 19
-                // currentTimePhrases.Add($"{startOfDay.Minute} past {startOfDay.Hour}");
-
-                // 12 after 19
-                // currentTimePhrases.Add($"{startOfDay.Minute} after {startOfDay.Hour}");
-
-                // TO
-                if (startOfDay.Hour < 22)
+            // PM
+            if (startOfDay.Hour >= 13)
+            {
+                if (startOfDay.Minute == 0)
                 {
-                    var toHourWord = numberToWord[startOfDay.Hour + 1];
-                    var toMinute = 60 - startOfDay.Minute;
-                    var toMinuteWord = numberToWord[toMinute];
-
-                    // twelve minute(s) to nineteen
-                    currentTimePhrases.Add($"{toMinuteWord} {minutePlural} to {toHourWord}");
-
-                    // 12 minute(s) to nineteen
-                    // currentTimePhrases.Add($"{toMinute} {minutePlural} to {toHourWord}");
-
-                    // twelve minute(s) to 19
-                    // currentTimePhrases.Add(
-                    //     $"{toMinuteWord} {minutePlural} to {startOfDay.Hour + 1}"
-                    // );
-
-                    // 12 minute(s) to 19
-                    // currentTimePhrases.Add($"{toMinute} {minutePlural} to {startOfDay.Hour + 1}");
-
-                    // twelve to nineteen
-                    currentTimePhrases.Add($"{toMinuteWord} to {toHourWord}");
-
-                    // 12 to nineteen
-                    // currentTimePhrases.Add($"{toMinute} to {toHourWord}");
-
-                    // twelve to 19
-                    // currentTimePhrases.Add($"{toMinuteWord} to {startOfDay.Hour + 1}");
-
-                    // 12 to 19
-                    // currentTimePhrases.Add($"{toMinute} to {startOfDay.Hour + 1}");
-
-                    if (startOfDay.Minute == 45)
-                    {
-                        currentTimePhrases.Add($"quarter to {toHourWord}");
-                    }
+                    currentTimePhrasesOneOf.AddRange(AppendPM($"At {hourWord}"));
                 }
+                else if (startOfDay.Minute < 4)
+                {
+                    currentTimePhrasesOneOf.AddRange(AppendPM($"just after {startOfDay.Hour}"));
+                    currentTimePhrasesOneOf.AddRange(AppendAM($"just after {hourWord}"));
+                }
+
+                currentTimePhrasesOneOf.AddRange(AppendPM($"{startOfDay:h:mm}"));
+            }
+
+            if (startOfDay.Hour >= 13 && startOfDay.Minute > 0)
+            {
+                // twelve minute(s) past nineteen
+                currentTimePhrasesOneOf.AddRange(
+                    AppendPM($"{minuteWord} {minutePlural} past {hourWord}")
+                );
+
+                // twelve minute(s) after nineteen
+                currentTimePhrasesOneOf.AddRange(
+                    AppendPM($"{minuteWord} {minutePlural} after {hourWord}")
+                );
+
+                // twelve past nineteen
+                currentTimePhrasesOneOf.AddRange(AppendPM($"{minuteWord} past {hourWord}"));
+
+                // twelve after nineteen
+                currentTimePhrasesOneOf.AddRange(AppendPM($"{minuteWord} after {hourWord}"));
+            }
+
+            // Generic
+            if (startOfDay.Minute > 0)
+            {
+                // twelve minute(s) past nineteen
+                currentTimePhrasesOneOf.Add($"{minuteWord} {minutePlural} past {hourWord}");
+
+                // twelve minute(s) after nineteen
+                currentTimePhrasesOneOf.Add($"{minuteWord} {minutePlural} after {hourWord}");
+
+                // twelve past nineteen
+                currentTimePhrasesOneOf.Add($"{minuteWord} past {hourWord}");
+
+                // twelve after nineteen
+                currentTimePhrasesOneOf.Add($"{minuteWord} after {hourWord}");
+            }
+
+            // AM
+            if (startOfDay.Hour <= 12 && startOfDay.Minute > 0)
+            {
+                var toHourWord = numberToWord[startOfDay.Hour + 1];
+                var toMinute = 60 - startOfDay.Minute;
+                var toMinuteWord = numberToWord[toMinute];
+                var nearlyMinute = 60 - startOfDay.Minute;
+
+                // twelve minute(s) to nineteen
+                currentTimePhrasesOneOf.AddRange(
+                    AppendAM($"{toMinuteWord} {minutePlural} to {toHourWord}")
+                );
 
                 if (startOfDay.Minute == 15)
                 {
-                    currentTimePhrases.Add($"quarter past {hourWord}");
-                    currentTimePhrases.Add($"quarter-past {hourWord}");
-                    currentTimePhrases.Add($"quarter after {hourWord}");
-                    currentTimePhrases.Add($"quarter-after {hourWord}");
+                    currentTimePhrasesOneOf.AddRange(AppendAM($"quarter past {hourWord}"));
+                    currentTimePhrasesOneOf.AddRange(AppendAM($"quarter-past {hourWord}"));
+                    currentTimePhrasesOneOf.AddRange(AppendAM($"quarter after {hourWord}"));
+                    currentTimePhrasesOneOf.AddRange(AppendAM($"quarter-after {hourWord}"));
                 }
 
                 if (startOfDay.Minute == 30)
                 {
-                    currentTimePhrases.Add($"half past {hourWord}");
-                    currentTimePhrases.Add($"half-past {hourWord}");
+                    currentTimePhrasesOneOf.AddRange(AppendAM($"half past {hourWord}"));
+                    currentTimePhrasesOneOf.AddRange(AppendAM($"half-past {hourWord}"));
+                }
+
+                if (startOfDay.Minute == 45)
+                {
+                    currentTimePhrasesOneOf.AddRange(AppendAM($"quarter to {toHourWord}"));
+                }
+
+                if (nearlyMinute < 4)
+                {
+                    currentTimePhrasesOneOf.AddRange(AppendAM($"nearly {toHourWord} o'clock"));
+                    currentTimePhrasesOneOf.AddRange(AppendAM($"nearly {toHourWord} o’clock"));
+
+                    currentTimePhrasesOneOf.AddRange(AppendAM($"about {toHourWord} o'clock"));
+                    currentTimePhrasesOneOf.AddRange(AppendAM($"about {toHourWord} o’clock"));
+                }
+                else if (startOfDay.Minute < 4)
+                {
+                    currentTimePhrasesOneOf.AddRange(AppendAM($"about {toHourWord} o'clock"));
+                    currentTimePhrasesOneOf.AddRange(AppendAM($"about {toHourWord} o’clock"));
                 }
             }
-            else
+
+            // PM
+            if (startOfDay.Hour >= 13 && startOfDay.Hour <= 22 && startOfDay.Minute > 0)
             {
-                currentTimePhrases.Add($"{hourWord} o'clock");
-                currentTimePhrases.Add($"{hourWord} o’clock");
+                var toHourWord = numberToWord[startOfDay.Hour + 1];
+                var toMinute = 60 - startOfDay.Minute;
+                var toMinuteWord = numberToWord[toMinute];
+                var nearlyMinute = 60 - startOfDay.Minute;
+
+                // twelve minute(s) to nineteen
+                currentTimePhrasesOneOf.AddRange(
+                    AppendPM($"{toMinuteWord} {minutePlural} to {toHourWord}")
+                );
+
+                if (startOfDay.Minute == 15)
+                {
+                    currentTimePhrasesOneOf.AddRange(AppendPM($"quarter past {hourWord}"));
+                    currentTimePhrasesOneOf.AddRange(AppendPM($"quarter-past {hourWord}"));
+                    currentTimePhrasesOneOf.AddRange(AppendPM($"quarter after {hourWord}"));
+                    currentTimePhrasesOneOf.AddRange(AppendPM($"quarter-after {hourWord}"));
+                }
+
+                if (startOfDay.Minute == 30)
+                {
+                    currentTimePhrasesOneOf.AddRange(AppendPM($"half past {hourWord}"));
+                    currentTimePhrasesOneOf.AddRange(AppendPM($"half-past {hourWord}"));
+                }
+
+                if (startOfDay.Minute == 45)
+                {
+                    currentTimePhrasesOneOf.AddRange(AppendPM($"quarter to {toHourWord}"));
+                }
+
+                if (nearlyMinute < 4)
+                {
+                    currentTimePhrasesOneOf.AddRange(AppendPM($"nearly {toHourWord} o'clock"));
+                    currentTimePhrasesOneOf.AddRange(AppendPM($"nearly {toHourWord} o’clock"));
+
+                    currentTimePhrasesOneOf.AddRange(AppendPM($"about {toHourWord} o'clock"));
+                    currentTimePhrasesOneOf.AddRange(AppendPM($"about {toHourWord} o’clock"));
+                }
+                else if (startOfDay.Minute < 4)
+                {
+                    currentTimePhrasesOneOf.AddRange(AppendPM($"about {toHourWord} o'clock"));
+                    currentTimePhrasesOneOf.AddRange(AppendPM($"about {toHourWord} o’clock"));
+                }
             }
 
-            var key = startOfDay.ToString("HH:mm");
-            if (!timePhrases.ContainsKey(key))
+            // Generic
+            if (startOfDay.Minute > 0)
             {
-                timePhrases.Add(key, currentTimePhrases);
+                var toHourWord = numberToWord[startOfDay.Hour + 1];
+                var toMinute = 60 - startOfDay.Minute;
+                var toMinuteWord = numberToWord[toMinute];
+                var nearlyMinute = 60 - startOfDay.Minute;
+
+                // twelve minute(s) to nineteen
+                currentTimePhrasesOneOf.Add($"{toMinuteWord} {minutePlural} to {toHourWord}");
+
+                if (startOfDay.Minute == 15)
+                {
+                    currentTimePhrasesOneOf.Add($"quarter past {hourWord}");
+                    currentTimePhrasesOneOf.Add($"quarter-past {hourWord}");
+                    currentTimePhrasesOneOf.Add($"quarter after {hourWord}");
+                    currentTimePhrasesOneOf.Add($"quarter-after {hourWord}");
+                }
+
+                if (startOfDay.Minute == 30)
+                {
+                    currentTimePhrasesOneOf.Add($"half past {hourWord}");
+                    currentTimePhrasesOneOf.Add($"half-past {hourWord}");
+                }
+
+                if (startOfDay.Minute == 45)
+                {
+                    currentTimePhrasesOneOf.Add($"quarter to {toHourWord}");
+                }
+
+                if (nearlyMinute < 4)
+                {
+                    currentTimePhrasesOneOf.Add($"nearly {toHourWord} o'clock");
+                    currentTimePhrasesOneOf.Add($"nearly {toHourWord} o’clock");
+
+                    currentTimePhrasesOneOf.Add($"about {toHourWord} o'clock");
+                    currentTimePhrasesOneOf.Add($"about {toHourWord} o’clock");
+                }
+                else if (startOfDay.Minute < 4)
+                {
+                    currentTimePhrasesOneOf.Add($"about {toHourWord} o'clock");
+                    currentTimePhrasesOneOf.Add($"about {toHourWord} o’clock");
+                }
+            }
+
+            // AM
+            if (startOfDay.Hour <= 12 && startOfDay.Minute == 0)
+            {
+                currentTimePhrasesOneOf.AddRange(AppendAM($"{hourWord} o'clock"));
+                currentTimePhrasesOneOf.AddRange(AppendAM($"{hourWord} o’clock"));
+
+                currentTimePhrasesOneOf.AddRange(AppendAM($"It struck {hourWord}"));
+            }
+
+            // PM
+            if (startOfDay.Minute == 0)
+            {
+                currentTimePhrasesOneOf.AddRange(AppendPM($"{hourWord} o'clock"));
+                currentTimePhrasesOneOf.AddRange(AppendPM($"{hourWord} o’clock"));
+
+                currentTimePhrasesOneOf.AddRange(AppendPM($"It struck {hourWord}"));
+            }
+
+            // AM
+            if (startOfDay.Hour < 9 && startOfDay.Minute > 57)
+            {
+                var toHourWord = numberToWord[startOfDay.Hour + 1];
+                currentTimePhrasesOneOf.Add($"almost at {toHourWord} in the morning");
+            }
+
+            if (startOfDay.Hour < 9 && startOfDay.Minute == 0)
+            {
+                currentTimePhrasesOneOf.Add($"at {hourWord} o’clock in the morning");
+                currentTimePhrasesOneOf.Add($"{hourWord} o’clock in the morning");
+                currentTimePhrasesOneOf.Add($"{hourWord} o’clock in the morn");
+
+                currentTimePhrasesOneOf.Add($"at {hourWord} o'clock in the morning");
+                currentTimePhrasesOneOf.Add($"{hourWord} o'clock in the morning");
+                currentTimePhrasesOneOf.Add($"{hourWord} o'clock in the morn");
+
+                currentTimePhrasesOneOf.Add($"at {hourWord} in the morning");
+                currentTimePhrasesOneOf.Add($"{hourWord} in the morning");
+                currentTimePhrasesOneOf.Add($"{hourWord} in the morn");
+            }
+
+            // PM
+            if (startOfDay.Hour > 12 && startOfDay.Minute > 57)
+            {
+                var toHourWord = numberToWord[startOfDay.Hour + 1];
+                currentTimePhrasesOneOf.Add($"almost at {toHourWord} in the afternoon");
+            }
+
+            if (startOfDay.Hour > 12 && startOfDay.Minute == 0)
+            {
+                currentTimePhrasesOneOf.Add($"at {hourWord} o’clock in the afternoon");
+                currentTimePhrasesOneOf.Add($"{hourWord} o’clock in the afternoon");
+
+                currentTimePhrasesOneOf.Add($"at {hourWord} o'clock in the afternoon");
+                currentTimePhrasesOneOf.Add($"{hourWord} o'clock in the afternoon");
+
+                currentTimePhrasesOneOf.Add($"at {hourWord} in the afternoon");
+                currentTimePhrasesOneOf.Add($"{hourWord} in the afternoon");
+            }
+
+            // Generic
+            if (startOfDay.Minute == 0)
+            {
+                currentTimePhrasesOneOf.Add($"{hourWord} o'clock");
+                currentTimePhrasesOneOf.Add($"{hourWord} o’clock");
+
+                currentTimePhrasesOneOf.Add($"It struck {hourWord}");
+            }
+
+            currentTimePhrasesOneOf.Add(startOfDay.ToString("HH:mm"));
+
+            var key = startOfDay.ToString("HH:mm");
+            if (!timePhrasesOneOf.ContainsKey(key))
+            {
                 timePhrasesOneOf.Add(key, currentTimePhrasesOneOf);
             }
 
             startOfDay = startOfDay.AddMinutes(1);
         }
 
-        return (timePhrases, timePhrasesOneOf);
+        return timePhrasesOneOf;
     }
 }

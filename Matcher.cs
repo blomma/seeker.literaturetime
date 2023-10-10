@@ -1,12 +1,10 @@
 using System.Text;
-using System.Text.RegularExpressions;
 
 namespace Seeker;
 
 public static class Matcher
 {
     public static List<string> FindMatches(
-        Dictionary<string, List<string>> timePhrases,
         Dictionary<string, List<string>> timePhrasesOneOf,
         string line
     )
@@ -31,30 +29,6 @@ public static class Matcher
                         {
                             matches.Add($"{timePhraseOneOf.Key}|{phrase}");
                             break;
-                        }
-                    }
-                }
-            }
-        }
-
-        foreach (var timePhrase in timePhrases)
-        {
-            foreach (var phrase in timePhrase.Value)
-            {
-                var startIndex = line.IndexOf(phrase, StringComparison.InvariantCultureIgnoreCase);
-
-                if (startIndex != -1)
-                {
-                    if (startIndex == 0)
-                    {
-                        matches.Add($"{timePhrase.Key}|{phrase}");
-                    }
-                    else
-                    {
-                        var beforeChar = line[startIndex - 1];
-                        if (beforeChar == ' ')
-                        {
-                            matches.Add($"{timePhrase.Key}|{phrase}");
                         }
                     }
                 }

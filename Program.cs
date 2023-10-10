@@ -5,7 +5,7 @@ using Seeker;
 
 string gutPath = "/Users/blomma/Downloads/gutenberg";
 var files = Directory.EnumerateFiles(gutPath, "*.txt", SearchOption.AllDirectories);
-var (timePhrases, timePhrasesOneOf) = Phrases.GeneratePhrases();
+var timePhrasesOneOf = Phrases.GeneratePhrases();
 
 var titlesExclusion = new List<string>
 {
@@ -22,8 +22,13 @@ List<LiteratureTime> literatureTimes = new();
 
 var fileDirectoyDone = new List<string>();
 
+int totalFiles = files.Count();
+int processedFiles = 0;
+
 foreach (var file in files)
 {
+    processedFiles += 1;
+
     var filePath = Path.GetDirectoryName(file);
     if (filePath == null)
     {
@@ -43,6 +48,7 @@ foreach (var file in files)
 
     if (fileDirectoyDone.Contains(fileDirectory))
     {
+        Console.WriteLine($"Skipping (directory done) {file} - {processedFiles}:{totalFiles}");
         continue;
     }
 
@@ -64,18 +70,21 @@ foreach (var file in files)
 
     if (!File.Exists(fileToRead))
     {
+        Console.WriteLine($"Skipping (wrong format) {file} - {processedFiles}:{totalFiles}");
         continue;
     }
 
-    Console.WriteLine(fileToRead);
+    Console.WriteLine($"{fileToRead} - {processedFiles}:{totalFiles}");
 
     var lines = File.ReadAllLines(fileToRead);
     var title = "";
     var author = "";
+    var language = "";
 
     var matches = new Dictionary<int, List<string>>();
 
     var taskList = new List<Task<(List<string>, int)>>();
+
     for (int i = 0; i < lines.Length; i++)
     {
         var line = lines[i];
@@ -94,11 +103,19 @@ foreach (var file in files)
             continue;
         }
 
-        if (
-            line.StartsWith("Language:", StringComparison.InvariantCultureIgnoreCase)
-            && !line.Contains("English", StringComparison.InvariantCultureIgnoreCase)
-        )
+        if (line.StartsWith("Language:", StringComparison.InvariantCultureIgnoreCase))
         {
+            language = line.Replace("Language:", "").Trim();
+            if (string.IsNullOrWhiteSpace(language))
+            {
+                break;
+            }
+
+            if (!language.Contains("English", StringComparison.InvariantCultureIgnoreCase))
+            {
+                break;
+            }
+
             continue;
         }
 
@@ -110,6 +127,12 @@ foreach (var file in files)
         if (line.StartsWith("Title: ", StringComparison.InvariantCultureIgnoreCase))
         {
             title = line.Replace("Title:", "").Trim();
+
+            if (string.IsNullOrWhiteSpace(title))
+            {
+                break;
+            }
+
             if (titlesExclusion.Contains(title))
             {
                 break;
@@ -121,6 +144,21 @@ foreach (var file in files)
         if (line.StartsWith("Author: ", StringComparison.InvariantCultureIgnoreCase))
         {
             author = line.Replace("Author:", "").Trim();
+
+            if (string.IsNullOrWhiteSpace(author))
+            {
+                break;
+            }
+
+            continue;
+        }
+
+        if (
+            string.IsNullOrWhiteSpace(title)
+            || string.IsNullOrWhiteSpace(author)
+            || string.IsNullOrWhiteSpace(language)
+        )
+        {
             continue;
         }
 
@@ -128,7 +166,7 @@ foreach (var file in files)
         taskList.Add(
             Task.Run(() =>
             {
-                var result = Matcher.FindMatches(timePhrases, timePhrasesOneOf, line);
+                var result = Matcher.FindMatches(timePhrasesOneOf, line);
                 return (result, index);
             })
         );
@@ -147,11 +185,6 @@ foreach (var file in files)
 
     fileDirectoyDone.Add(fileDirectory);
 
-    if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(author))
-    {
-        continue;
-    }
-
     var literatureTimesFromMatches = Matcher.GenerateQuotesFromMatches(
         matches,
         lines,
@@ -162,30 +195,48 @@ foreach (var file in files)
 
     literatureTimes.AddRange(literatureTimesFromMatches);
 
-    if (literatureTimes.Count > 100)
+    var lookup = literatureTimesFromMatches.ToLookup(t => t.Time);
+    foreach (IGrouping<string, LiteratureTime> literatureTimesIndexGroup in lookup)
+    {
+        var options = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+            // Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
+        };
+        string jsonString = JsonSerializer.Serialize(literatureTimesIndexGroup.ToList(), options);
+
+        var directory =
+            $"/Users/blomma/Downloads/data/{literatureTimesIndexGroup.Key.Replace(":", "_")}";
+        Directory.CreateDirectory(directory);
+
+        File.WriteAllText($"{directory}/{fileDirectory}.json", jsonString);
+    }
+
+    if (literatureTimes.Count > 200)
     {
         break;
     }
 }
 
-var lookup = literatureTimes.ToLookup(t => t.Time);
-var foundTimes = new List<string>();
-foreach (IGrouping<string, LiteratureTime> literatureTimesIndexGroup in lookup)
-{
-    var options = new JsonSerializerOptions
-    {
-        WriteIndented = true,
-        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-        // Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
-    };
-    string jsonString = JsonSerializer.Serialize(literatureTimesIndexGroup.ToList(), options);
-    var file = $"data/{literatureTimesIndexGroup.Key.Replace(":", "_")}";
-    File.WriteAllText(file, jsonString);
-    foundTimes.Add(literatureTimesIndexGroup.Key);
-}
+// var lookup = literatureTimes.ToLookup(t => t.Time);
+// var foundTimes = new List<string>();
+// foreach (IGrouping<string, LiteratureTime> literatureTimesIndexGroup in lookup)
+// {
+//     var options = new JsonSerializerOptions
+//     {
+//         WriteIndented = true,
+//         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+//         // Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
+//     };
+//     string jsonString = JsonSerializer.Serialize(literatureTimesIndexGroup.ToList(), options);
+//     var file = $"data/{literatureTimesIndexGroup.Key.Replace(":", "_")}";
+//     File.WriteAllText(file, jsonString);
+//     foundTimes.Add(literatureTimesIndexGroup.Key);
+// }
 
-var missing = timePhrases.Keys.Except(foundTimes).ToList();
-File.WriteAllLines("missing", missing);
+// var missing = timePhrases.Keys.Except(foundTimes).ToList();
+// File.WriteAllLines("missing", missing);
 
 public record LiteratureTime(
     string Time,
