@@ -63,7 +63,7 @@ public static class Matcher
                 if (!string.IsNullOrEmpty(quoteLine))
                 {
                     quoteString.Append(quoteLine);
-                    quoteString.Append(' ');
+                    quoteString.Append('\n');
                 }
             }
 
