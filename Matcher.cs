@@ -48,46 +48,182 @@ public static class Matcher
     {
         var literatureTimes = new List<LiteratureTime>();
 
-        foreach (var match in matches)
+        foreach (var (index, value) in matches)
         {
-            var index = match.Key;
-            var startLine = (index - 5) >= 0 ? (index - 5) : 0;
-            var endLine = (index + 5) <= lines.Length - 1 ? (index + 5) : lines.Length - 1;
-
-            var range = new Range(startLine, endLine);
-            var quote = lines.AsSpan(range);
-
             var quoteString = new StringBuilder();
-            foreach (var quoteLine in quote)
+
+            var matchLine = lines[index].Trim();
+            var endQuote = "";
+            if (matchLine[0] == '“')
             {
-                if (!string.IsNullOrEmpty(quoteLine))
+                endQuote = "”";
+            }
+            if (matchLine[0] == '"')
+            {
+                endQuote = "\"";
+            }
+
+            if (!IsUpperCase(matchLine[0]) && string.IsNullOrEmpty(endQuote))
+            {
+                var beforeLines = new List<string>();
+                var currentIndex = index;
+
+                // Search backwards... sortof for Uppercase
+                var maxLineLoops = 8;
+                var emptyLines = 0;
+                while (maxLineLoops > 0 && currentIndex > 0)
                 {
-                    quoteString.Append(quoteLine);
+                    currentIndex -= 1;
+                    maxLineLoops -= 1;
+
+                    var currentLine = lines[currentIndex].Trim();
+                    if (string.IsNullOrWhiteSpace(currentLine))
+                    {
+                        emptyLines += 1;
+                    }
+                    else
+                    {
+                        var dotIndex = currentLine.LastIndexOf(".");
+
+                        // Check for am/pm pattern
+                        var patternFound = false;
+                        if (dotIndex - 2 > 0)
+                        {
+                            var p = currentLine[dotIndex - 1].ToString().ToLowerInvariant();
+                            var pp = currentLine[dotIndex - 2].ToString().ToLowerInvariant();
+
+                            switch (p)
+                            {
+                                case "m" when pp == ".":
+                                case "d" when pp == "n":
+                                    patternFound = true;
+                                    break;
+                            }
+                        }
+
+                        if (dotIndex != -1 && !patternFound)
+                        {
+                            currentLine = currentLine[(dotIndex + 1)..].Trim();
+                            beforeLines.Add(currentLine);
+
+                            if (currentLine[0] == '“')
+                            {
+                                endQuote = "”";
+                            }
+                            if (currentLine[0] == '"')
+                            {
+                                endQuote = "\"";
+                            }
+
+                            break;
+                        }
+                    }
+
+                    beforeLines.Add(currentLine);
+
+                    if (emptyLines > 0)
+                    {
+                        break;
+                    }
+                }
+
+                beforeLines.Reverse();
+                beforeLines.ForEach(l =>
+                {
+                    quoteString.Append(l);
                     quoteString.Append('\n');
+                });
+            }
+
+            quoteString.Append(matchLine);
+            quoteString.Append('\n');
+
+            if (
+                !matchLine.AsSpan().EndsWith(".", StringComparison.InvariantCulture)
+                || !string.IsNullOrWhiteSpace(endQuote)
+            )
+            {
+                var currentIndex = index;
+
+                // Search forwards... sortof for a .
+                var maxLineLoops = 8;
+                var length = lines.Length - 1;
+                var emptyLines = 0;
+                while (maxLineLoops > 0 && currentIndex < length)
+                {
+                    currentIndex += 1;
+                    maxLineLoops -= 1;
+
+                    var currentLine = lines[currentIndex].Trim();
+                    if (string.IsNullOrWhiteSpace(currentLine))
+                    {
+                        emptyLines += 1;
+                    }
+                    else
+                    {
+                        if (maxLineLoops <= 3)
+                        {
+                            endQuote = string.Empty;
+                        }
+
+                        var endQuoteIndex = !string.IsNullOrWhiteSpace(endQuote)
+                            ? currentLine.IndexOf(endQuote)
+                            : -1;
+
+                        if (endQuoteIndex != -1)
+                        {
+                            endQuote = string.Empty;
+                        }
+
+                        var dotIndex = currentLine.IndexOf(".");
+
+                        // Check for am/pm pattern
+                        var patternFound = false;
+                        if (dotIndex + 2 <= currentLine.Length - 1)
+                        {
+                            var p = currentLine[dotIndex + 1];
+                            var pp = currentLine[dotIndex + 2];
+
+                            if (p.ToString().ToLowerInvariant() == "m" && pp.ToString() == ".")
+                            {
+                                patternFound = true;
+                            }
+                        }
+
+                        // ." || ".
+                        if (dotIndex != -1 && endQuoteIndex != -1 && !patternFound)
+                        {
+                            var endIndex = dotIndex < endQuoteIndex ? endQuoteIndex : dotIndex;
+                            currentLine = currentLine[..(endIndex + 1)].Trim();
+                            quoteString.Append(currentLine);
+                            quoteString.Append('\n');
+                            break;
+                        }
+                        else if (
+                            dotIndex != -1 && string.IsNullOrWhiteSpace(endQuote) && !patternFound
+                        )
+                        {
+                            currentLine = currentLine[..(dotIndex + 1)].Trim();
+                            quoteString.Append(currentLine);
+                            quoteString.Append('\n');
+                            break;
+                        }
+                    }
+
+                    quoteString.Append(currentLine);
+                    quoteString.Append('\n');
+
+                    if (emptyLines > 0)
+                    {
+                        break;
+                    }
                 }
             }
 
             var result = quoteString.ToString();
             result = result.Trim();
 
-            // if (!IsUpperCase(result.AsSpan(0, 1)))
-            // {
-            //     var firstDotIndex = result.IndexOf(".");
-            //     if (firstDotIndex != -1)
-            //     {
-            //         result = result[(firstDotIndex + 1)..];
-            //     }
-            // }
-
-            // var lastDotIndex = result.LastIndexOf(".");
-            // if (lastDotIndex != -1)
-            // {
-            //     result = result[..(lastDotIndex + 1)];
-            // }
-
-            // result = result.Trim();
-
-            foreach (var m in match.Value)
+            foreach (var m in value)
             {
                 var matchValues = m.Split("|");
                 var literatureTime = new LiteratureTime(
@@ -106,10 +242,10 @@ public static class Matcher
         return literatureTimes;
     }
 
-    public static bool IsUpperCase(ReadOnlySpan<char> a)
+    private static bool IsUpperCase(char a)
     {
-        Span<char> upper = new();
-        a.ToUpperInvariant(upper);
+        const char upper = new();
+        char.ToUpperInvariant(upper);
 
         return a == upper;
     }

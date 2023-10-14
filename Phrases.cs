@@ -68,7 +68,7 @@ public static class Phrases
             { 60, "sixty" },
         };
 
-    private static List<string> AppendAM(string timePhrase)
+    private static IEnumerable<string> AppendAM(string timePhrase)
     {
         return new List<string>
         {
@@ -81,7 +81,7 @@ public static class Phrases
         };
     }
 
-    private static List<string> AppendPM(string timePhrase)
+    private static IEnumerable<string> AppendPM(string timePhrase)
     {
         return new List<string>
         {
@@ -335,7 +335,7 @@ public static class Phrases
             // }
 
             // AM
-            if (startOfDay.Hour <= 12 && startOfDay.Minute == 0)
+            if (startOfDay is { Hour: <= 12, Minute: 0 })
             {
                 currentTimePhrasesOneOf.AddRange(AppendAM($"{hourWord} o'clock"));
                 currentTimePhrasesOneOf.AddRange(AppendAM($"{hourWord} o’clock"));
@@ -353,13 +353,13 @@ public static class Phrases
             }
 
             // AM
-            if (startOfDay.Hour < 9 && startOfDay.Minute > 57)
+            if (startOfDay is { Hour: < 9, Minute: > 57 })
             {
                 var toHourWord = numberToWord[startOfDay.Hour + 1];
                 currentTimePhrasesOneOf.Add($"almost at {toHourWord} in the morning");
             }
 
-            if (startOfDay.Hour < 9 && startOfDay.Minute == 0)
+            if (startOfDay is { Hour: < 9, Minute: 0 })
             {
                 currentTimePhrasesOneOf.Add($"at {hourWord} o’clock in the morning");
                 currentTimePhrasesOneOf.Add($"{hourWord} o’clock in the morning");
@@ -375,13 +375,13 @@ public static class Phrases
             }
 
             // PM
-            if (startOfDay.Hour > 12 && startOfDay.Minute > 57)
+            if (startOfDay is { Hour: > 12, Minute: > 57 })
             {
                 var toHourWord = numberToWord[startOfDay.Hour + 1];
                 currentTimePhrasesOneOf.Add($"almost at {toHourWord} in the afternoon");
             }
 
-            if (startOfDay.Hour > 12 && startOfDay.Minute == 0)
+            if (startOfDay is { Hour: > 12, Minute: 0 })
             {
                 currentTimePhrasesOneOf.Add($"at {hourWord} o’clock in the afternoon");
                 currentTimePhrasesOneOf.Add($"{hourWord} o’clock in the afternoon");
@@ -402,13 +402,10 @@ public static class Phrases
             //     currentTimePhrasesOneOf.Add($"It struck {hourWord}");
             // }
 
-            currentTimePhrasesOneOf.Add(startOfDay.ToString("HH:mm"));
+            // currentTimePhrasesOneOf.Add(startOfDay.ToString("HH:mm"));
 
             var key = startOfDay.ToString("HH:mm");
-            if (!timePhrasesOneOf.ContainsKey(key))
-            {
-                timePhrasesOneOf.Add(key, currentTimePhrasesOneOf);
-            }
+            timePhrasesOneOf.TryAdd(key, currentTimePhrasesOneOf);
 
             startOfDay = startOfDay.AddMinutes(1);
         }

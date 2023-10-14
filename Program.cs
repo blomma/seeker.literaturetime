@@ -1,9 +1,10 @@
 ﻿using System.Text.Encodings.Web;
 using System.Text.Json;
-using System.Text.Unicode;
 using Seeker;
 
-string gutPath = "/Users/blomma/Downloads/gutenberg";
+// string gutPath = "/Users/blomma/Downloads/gutenberg";
+
+string gutPath = "/Users/blomma/Downloads/test";
 var files = Directory.EnumerateFiles(gutPath, "*.txt", SearchOption.AllDirectories);
 var timePhrasesOneOf = Phrases.GeneratePhrases();
 
@@ -20,22 +21,18 @@ var titlesExclusion = new List<string>
 
 List<LiteratureTime> literatureTimes = new();
 
-var fileDirectoyDone = new List<string>();
+var fileDirectoryDone = new List<string>();
 
-int totalFiles = files.Count();
-int processedFiles = 0;
+var totalFiles = files.Count();
+var processedFiles = 0;
 
 foreach (var file in files)
 {
     processedFiles += 1;
 
     var filePath = Path.GetDirectoryName(file);
-    if (filePath == null)
-    {
-        continue;
-    }
 
-    var fileDirectory = filePath.Split(Path.DirectorySeparatorChar).LastOrDefault();
+    var fileDirectory = filePath?.Split(Path.DirectorySeparatorChar).LastOrDefault();
     if (fileDirectory == null)
     {
         continue;
@@ -46,7 +43,7 @@ foreach (var file in files)
         continue;
     }
 
-    if (fileDirectoyDone.Contains(fileDirectory))
+    if (fileDirectoryDone.Contains(fileDirectory))
     {
         Console.WriteLine($"Skipping (directory done) {file} - {processedFiles}:{totalFiles}");
         continue;
@@ -57,8 +54,8 @@ foreach (var file in files)
     // Prefer utf-8, files that end in -0
     // Otherwise prefer files that end in -8
     // else fallback to default
-    var utf8File = Path.Combine(filePath, $"{fileDirectory}-0.txt");
-    var iso8859_1 = Path.Combine(filePath, $"{fileDirectory}-8.txt");
+    var utf8File = Path.Combine(filePath!, $"{fileDirectory}-0.txt");
+    var iso8859_1 = Path.Combine(filePath!, $"{fileDirectory}-8.txt");
     if (File.Exists(utf8File))
     {
         fileToRead = utf8File;
@@ -85,7 +82,7 @@ foreach (var file in files)
 
     var taskList = new List<Task<(List<string>, int)>>();
 
-    for (int i = 0; i < lines.Length; i++)
+    for (var i = 0; i < lines.Length; i++)
     {
         var line = lines[i];
         if (string.IsNullOrWhiteSpace(line))
@@ -183,7 +180,7 @@ foreach (var file in files)
         }
     }
 
-    fileDirectoyDone.Add(fileDirectory);
+    fileDirectoryDone.Add(fileDirectory);
 
     var literatureTimesFromMatches = Matcher.GenerateQuotesFromMatches(
         matches,
@@ -196,7 +193,7 @@ foreach (var file in files)
     literatureTimes.AddRange(literatureTimesFromMatches);
 
     var lookup = literatureTimesFromMatches.ToLookup(t => t.Time);
-    foreach (IGrouping<string, LiteratureTime> literatureTimesIndexGroup in lookup)
+    foreach (var literatureTimesIndexGroup in lookup)
     {
         var options = new JsonSerializerOptions
         {
@@ -204,7 +201,7 @@ foreach (var file in files)
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
             // Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
         };
-        string jsonString = JsonSerializer.Serialize(literatureTimesIndexGroup.ToList(), options);
+        var jsonString = JsonSerializer.Serialize(literatureTimesIndexGroup.ToList(), options);
 
         var directory =
             $"/Users/blomma/Downloads/data/{literatureTimesIndexGroup.Key.Replace(":", "_")}";
@@ -213,30 +210,11 @@ foreach (var file in files)
         File.WriteAllText($"{directory}/{fileDirectory}.json", jsonString);
     }
 
-    if (literatureTimes.Count > 200)
+    if (literatureTimes.Count > 20)
     {
         break;
     }
 }
-
-// var lookup = literatureTimes.ToLookup(t => t.Time);
-// var foundTimes = new List<string>();
-// foreach (IGrouping<string, LiteratureTime> literatureTimesIndexGroup in lookup)
-// {
-//     var options = new JsonSerializerOptions
-//     {
-//         WriteIndented = true,
-//         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-//         // Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
-//     };
-//     string jsonString = JsonSerializer.Serialize(literatureTimesIndexGroup.ToList(), options);
-//     var file = $"data/{literatureTimesIndexGroup.Key.Replace(":", "_")}";
-//     File.WriteAllText(file, jsonString);
-//     foundTimes.Add(literatureTimesIndexGroup.Key);
-// }
-
-// var missing = timePhrases.Keys.Except(foundTimes).ToList();
-// File.WriteAllLines("missing", missing);
 
 public record LiteratureTime(
     string Time,
