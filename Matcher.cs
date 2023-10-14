@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Text;
 
 namespace Seeker;
@@ -14,24 +15,22 @@ public static class Matcher
         {
             foreach (var phrase in timePhraseOneOf.Value)
             {
-                var startIndex = line.IndexOf(phrase, StringComparison.InvariantCultureIgnoreCase);
-                if (startIndex != -1)
+                var startIndex = line.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
+                if (startIndex == -1)
+                    continue;
+
+                if (startIndex == 0)
                 {
-                    if (startIndex == 0)
-                    {
-                        matches.Add($"{timePhraseOneOf.Key}|{phrase}");
-                        break;
-                    }
-                    else
-                    {
-                        var beforeChar = line[startIndex - 1];
-                        if (beforeChar == ' ')
-                        {
-                            matches.Add($"{timePhraseOneOf.Key}|{phrase}");
-                            break;
-                        }
-                    }
+                    matches.Add($"{timePhraseOneOf.Key}|{phrase}");
+                    break;
                 }
+
+                var beforeChar = line[startIndex - 1];
+                if (beforeChar != ' ')
+                    continue;
+
+                matches.Add($"{timePhraseOneOf.Key}|{phrase}");
+                break;
             }
         }
 
@@ -39,7 +38,7 @@ public static class Matcher
     }
 
     public static List<LiteratureTime> GenerateQuotesFromMatches(
-        Dictionary<int, List<string>> matches,
+        ConcurrentDictionary<int, List<string>> matches,
         string[] lines,
         string title,
         string author,
@@ -68,7 +67,7 @@ public static class Matcher
                 var beforeLines = new List<string>();
                 var currentIndex = index;
 
-                // Search backwards... sortof for Uppercase
+                // Search backwards... sort of for Uppercase
                 var maxLineLoops = 8;
                 var emptyLines = 0;
                 while (maxLineLoops > 0 && currentIndex > 0)
@@ -83,7 +82,7 @@ public static class Matcher
                     }
                     else
                     {
-                        var dotIndex = currentLine.LastIndexOf(".");
+                        var dotIndex = currentLine.LastIndexOf(".", StringComparison.Ordinal);
 
                         // Check for am/pm pattern
                         var patternFound = false;
@@ -145,7 +144,7 @@ public static class Matcher
             {
                 var currentIndex = index;
 
-                // Search forwards... sortof for a .
+                // Search forwards... sort of for a .
                 var maxLineLoops = 8;
                 var length = lines.Length - 1;
                 var emptyLines = 0;
@@ -167,7 +166,7 @@ public static class Matcher
                         }
 
                         var endQuoteIndex = !string.IsNullOrWhiteSpace(endQuote)
-                            ? currentLine.IndexOf(endQuote)
+                            ? currentLine.IndexOf(endQuote, StringComparison.OrdinalIgnoreCase)
                             : -1;
 
                         if (endQuoteIndex != -1)
@@ -175,7 +174,7 @@ public static class Matcher
                             endQuote = string.Empty;
                         }
 
-                        var dotIndex = currentLine.IndexOf(".");
+                        var dotIndex = currentLine.IndexOf(".", StringComparison.Ordinal);
 
                         // Check for am/pm pattern
                         var patternFound = false;

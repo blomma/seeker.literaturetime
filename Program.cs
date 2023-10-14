@@ -1,4 +1,6 @@
-﻿using System.Text.Encodings.Web;
+﻿using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using Seeker;
 
@@ -26,6 +28,7 @@ var fileDirectoryDone = new List<string>();
 var totalFiles = files.Count();
 var processedFiles = 0;
 
+var watch = Stopwatch.StartNew();
 foreach (var file in files)
 {
     processedFiles += 1;
@@ -38,7 +41,8 @@ foreach (var file in files)
         continue;
     }
 
-    if (fileDirectory.ToLowerInvariant() == "old")
+    fileDirectory = fileDirectory.ToLowerInvariant();
+    if (fileDirectory == "old")
     {
         continue;
     }
@@ -78,10 +82,7 @@ foreach (var file in files)
     var author = "";
     var language = "";
 
-    var matches = new Dictionary<int, List<string>>();
-
-    var taskList = new List<Task<(List<string>, int)>>();
-
+    var startIndex = -1;
     for (var i = 0; i < lines.Length; i++)
     {
         var line = lines[i];
@@ -90,17 +91,17 @@ foreach (var file in files)
             continue;
         }
 
-        if (line.StartsWith("Posting Date:", StringComparison.InvariantCultureIgnoreCase))
+        if (line.StartsWith("Posting Date:", StringComparison.OrdinalIgnoreCase))
         {
             continue;
         }
 
-        if (line.StartsWith("Release Date:", StringComparison.InvariantCultureIgnoreCase))
+        if (line.StartsWith("Release Date:", StringComparison.OrdinalIgnoreCase))
         {
             continue;
         }
 
-        if (line.StartsWith("Language:", StringComparison.InvariantCultureIgnoreCase))
+        if (line.StartsWith("Language:", StringComparison.OrdinalIgnoreCase))
         {
             language = line.Replace("Language:", "").Trim();
             if (string.IsNullOrWhiteSpace(language))
@@ -108,7 +109,7 @@ foreach (var file in files)
                 break;
             }
 
-            if (!language.Contains("English", StringComparison.InvariantCultureIgnoreCase))
+            if (!language.Contains("English", StringComparison.OrdinalIgnoreCase))
             {
                 break;
             }
@@ -116,12 +117,12 @@ foreach (var file in files)
             continue;
         }
 
-        if (line.StartsWith("[Most recently updated:", StringComparison.InvariantCultureIgnoreCase))
+        if (line.StartsWith("[Most recently updated:", StringComparison.OrdinalIgnoreCase))
         {
             continue;
         }
 
-        if (line.StartsWith("Title: ", StringComparison.InvariantCultureIgnoreCase))
+        if (line.StartsWith("Title: ", StringComparison.OrdinalIgnoreCase))
         {
             title = line.Replace("Title:", "").Trim();
 
@@ -138,7 +139,7 @@ foreach (var file in files)
             continue;
         }
 
-        if (line.StartsWith("Author: ", StringComparison.InvariantCultureIgnoreCase))
+        if (line.StartsWith("Author: ", StringComparison.OrdinalIgnoreCase))
         {
             author = line.Replace("Author:", "").Trim();
 
@@ -151,33 +152,33 @@ foreach (var file in files)
         }
 
         if (
-            string.IsNullOrWhiteSpace(title)
-            || string.IsNullOrWhiteSpace(author)
-            || string.IsNullOrWhiteSpace(language)
+            !string.IsNullOrWhiteSpace(title)
+            && !string.IsNullOrWhiteSpace(author) & !string.IsNullOrWhiteSpace(language)
         )
         {
-            continue;
+            startIndex = i;
+            break;
         }
-
-        var index = i;
-        taskList.Add(
-            Task.Run(() =>
-            {
-                var result = Matcher.FindMatches(timePhrasesOneOf, line);
-                return (result, index);
-            })
-        );
     }
 
-    Task.WaitAll(taskList.ToArray());
+    var matches = new ConcurrentDictionary<int, List<string>>();
 
-    foreach (var t in taskList)
+    if (startIndex != -1)
     {
-        var (matchesInLine, index) = t.Result;
-        if (matchesInLine.Count > 0)
-        {
-            matches.Add(index, matchesInLine);
-        }
+        Parallel.For(
+            startIndex + 1,
+            lines.Length,
+            new ParallelOptions { MaxDegreeOfParallelism = 3 },
+            index =>
+            {
+                var line = lines[index];
+                var result = Matcher.FindMatches(timePhrasesOneOf, line);
+                if (result.Count > 0)
+                {
+                    matches.TryAdd(index, result);
+                }
+            }
+        );
     }
 
     fileDirectoryDone.Add(fileDirectory);
@@ -216,11 +217,15 @@ foreach (var file in files)
     }
 }
 
+watch.Stop();
+
+Console.WriteLine($"Time Taken : {watch.ElapsedMilliseconds} ms.");
+
 public record LiteratureTime(
     string Time,
     string TimeQuote,
     string Quote,
     string Title,
     string Author,
-    string gutenbergReference
+    string GutenbergReference
 );
