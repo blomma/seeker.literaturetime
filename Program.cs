@@ -4,11 +4,25 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using Seeker;
 
-string gutPath = "/Users/blomma/Downloads/gutenberg";
+var jsonSerializerOptions = new JsonSerializerOptions
+{
+    WriteIndented = true,
+    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    // Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
+};
+
+Directory.CreateDirectory("/Users/blomma/Downloads/data/");
+
+string gutPath = "./test/";
+
+// string gutPath = "/Users/blomma/Downloads/gutenberg";
 
 // string gutPath = "/Users/blomma/Downloads/test";
 var files = Directory.EnumerateFiles(gutPath, "*.txt", SearchOption.AllDirectories);
 var timePhrasesOneOf = Phrases.GeneratePhrases();
+
+var timePhrasesOneOfJson = JsonSerializer.Serialize(timePhrasesOneOf, jsonSerializerOptions);
+File.WriteAllText("/Users/blomma/Downloads/data/timePhrasesOneOf.json", timePhrasesOneOfJson);
 
 var titlesExclusion = new List<string>
 {
@@ -19,13 +33,6 @@ var titlesExclusion = new List<string>
     "The Bible, Douay-Rheims, New Testament",
     "The Declaration of Independence",
     "The Declaration of Independence"
-};
-
-var jsonSerializerOptions = new JsonSerializerOptions
-{
-    WriteIndented = true,
-    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-    // Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
 };
 
 List<LiteratureTime> literatureTimes = new();
@@ -180,7 +187,7 @@ foreach (var file in files)
         Parallel.For(
             startIndex + 1,
             lines.Length,
-            new ParallelOptions { MaxDegreeOfParallelism = 3 },
+            new ParallelOptions { MaxDegreeOfParallelism = 1 },
             index =>
             {
                 var line = lines[index];
