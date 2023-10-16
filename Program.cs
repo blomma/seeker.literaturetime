@@ -4,9 +4,9 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using Seeker;
 
-// string gutPath = "/Users/blomma/Downloads/gutenberg";
+string gutPath = "/Users/blomma/Downloads/gutenberg";
 
-string gutPath = "/Users/blomma/Downloads/test";
+// string gutPath = "/Users/blomma/Downloads/test";
 var files = Directory.EnumerateFiles(gutPath, "*.txt", SearchOption.AllDirectories);
 var timePhrasesOneOf = Phrases.GeneratePhrases();
 
@@ -21,9 +21,21 @@ var titlesExclusion = new List<string>
     "The Declaration of Independence"
 };
 
+var jsonSerializerOptions = new JsonSerializerOptions
+{
+    WriteIndented = true,
+    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    // Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
+};
+
 List<LiteratureTime> literatureTimes = new();
 
 var fileDirectoryDone = new List<string>();
+if (File.Exists("/Users/blomma/Downloads/data/fileDirectoryDone.json"))
+{
+    var content = File.ReadAllText("/Users/blomma/Downloads/data/fileDirectoryDone.json");
+    fileDirectoryDone = JsonSerializer.Deserialize<List<string>>(content);
+}
 
 var totalFiles = files.Count();
 var processedFiles = 0;
@@ -181,8 +193,6 @@ foreach (var file in files)
         );
     }
 
-    fileDirectoryDone.Add(fileDirectory);
-
     var literatureTimesFromMatches = Matcher.GenerateQuotesFromMatches(
         matches,
         lines,
@@ -196,13 +206,10 @@ foreach (var file in files)
     var lookup = literatureTimesFromMatches.ToLookup(t => t.Time);
     foreach (var literatureTimesIndexGroup in lookup)
     {
-        var options = new JsonSerializerOptions
-        {
-            WriteIndented = true,
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-            // Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
-        };
-        var jsonString = JsonSerializer.Serialize(literatureTimesIndexGroup.ToList(), options);
+        var jsonString = JsonSerializer.Serialize(
+            literatureTimesIndexGroup.ToList(),
+            jsonSerializerOptions
+        );
 
         var directory =
             $"/Users/blomma/Downloads/data/{literatureTimesIndexGroup.Key.Replace(":", "_")}";
@@ -210,6 +217,10 @@ foreach (var file in files)
 
         File.WriteAllText($"{directory}/{fileDirectory}.json", jsonString);
     }
+
+    fileDirectoryDone.Add(fileDirectory);
+    var fileDirectoryDoneJson = JsonSerializer.Serialize(fileDirectoryDone, jsonSerializerOptions);
+    File.WriteAllText("/Users/blomma/Downloads/data/fileDirectoryDone.json", fileDirectoryDoneJson);
 
     if (literatureTimes.Count > 20)
     {

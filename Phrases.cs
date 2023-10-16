@@ -357,19 +357,25 @@ public static class Phrases
                 currentTimePhrasesOneOf.Add($"almost at {toHourWord} in the morning");
             }
 
+            if (startOfDay is { Hour: < 12, Minute: 30 })
+            {
+                currentTimePhrasesOneOf.Add($"half past {hourWord} in the morning");
+                currentTimePhrasesOneOf.Add($"half past {hourWord} in the morn");
+            }
+
             if (startOfDay is { Hour: < 12, Minute: 0 })
             {
+                // currentTimePhrasesOneOf.Add($"at {hourWord} o’clock in the morning");
                 currentTimePhrasesOneOf.Add($"at {hourWord} o’clock in the morning");
-                currentTimePhrasesOneOf.Add($"{hourWord} o’clock in the morning");
-                currentTimePhrasesOneOf.Add($"{hourWord} o’clock in the morn");
+                currentTimePhrasesOneOf.Add($"at {hourWord} o’clock in the morn");
 
+                // currentTimePhrasesOneOf.Add($"at {hourWord} o'clock in the morning");
                 currentTimePhrasesOneOf.Add($"at {hourWord} o'clock in the morning");
-                currentTimePhrasesOneOf.Add($"{hourWord} o'clock in the morning");
-                currentTimePhrasesOneOf.Add($"{hourWord} o'clock in the morn");
+                currentTimePhrasesOneOf.Add($"at {hourWord} o'clock in the morn");
 
+                // currentTimePhrasesOneOf.Add($"at {hourWord} in the morning");
                 currentTimePhrasesOneOf.Add($"at {hourWord} in the morning");
-                currentTimePhrasesOneOf.Add($"{hourWord} in the morning");
-                currentTimePhrasesOneOf.Add($"{hourWord} in the morn");
+                currentTimePhrasesOneOf.Add($"at {hourWord} in the morn");
             }
 
             // PM

@@ -67,63 +67,89 @@ public static class Matcher
                 var beforeLines = new List<string>();
                 var currentIndex = index;
 
+                // var noOfDotsTobeFound = new Random().Next(1, 3);
+                var noOfDotsTobeFound = 2;
+
                 // Search backwards... sort of for Uppercase
-                var maxLineLoops = 8;
                 var emptyLines = 0;
-                while (maxLineLoops > 0 && currentIndex > 0)
+                var loopCount = 0;
+                while (loopCount < 8 && currentIndex > 0)
                 {
                     currentIndex -= 1;
-                    maxLineLoops -= 1;
+                    loopCount += 1;
 
                     var currentLine = lines[currentIndex].Trim();
                     if (string.IsNullOrWhiteSpace(currentLine))
                     {
                         emptyLines += 1;
-                    }
-                    else
-                    {
-                        var dotIndex = currentLine.LastIndexOf(".", StringComparison.Ordinal);
-
-                        // Check for am/pm pattern
-                        var patternFound = false;
-                        if (dotIndex - 2 > 0)
+                        if (emptyLines > 0)
                         {
-                            var p = currentLine[dotIndex - 1].ToString().ToLowerInvariant();
-                            var pp = currentLine[dotIndex - 2].ToString().ToLowerInvariant();
-
-                            switch (p)
-                            {
-                                case "m" when pp == ".":
-                                case "d" when pp == "n":
-                                    patternFound = true;
-                                    break;
-                            }
+                            break;
                         }
 
-                        if (dotIndex != -1 && !patternFound)
+                        continue;
+                    }
+
+                    var dotIndex = currentLine.LastIndexOf(".", StringComparison.Ordinal);
+
+                    // Check for am/pm pattern
+                    var patternFound = false;
+                    if (dotIndex - 2 > 0)
+                    {
+                        var p = currentLine[dotIndex - 1].ToString().ToLowerInvariant();
+                        var pp = currentLine[dotIndex - 2].ToString().ToLowerInvariant();
+
+                        switch (p)
+                        {
+                            case "m" when pp == ".":
+                            case "d" when pp == "n":
+                                patternFound = true;
+                                break;
+                        }
+                    }
+
+                    if (patternFound)
+                    {
+                        beforeLines.Add(currentLine);
+                        continue;
+                    }
+
+                    if (dotIndex != -1)
+                    {
+                        noOfDotsTobeFound -= 1;
+                        if (noOfDotsTobeFound == 0 || (noOfDotsTobeFound == 1 && loopCount >= 4))
                         {
                             currentLine = currentLine[(dotIndex + 1)..].Trim();
-                            beforeLines.Add(currentLine);
+                            if (string.IsNullOrWhiteSpace(currentLine))
+                            {
+                                break;
+                            }
 
-                            if (currentLine[0] == '“')
+                            // Check for a quote directly after the . and if that is all that is on the line break
+                            var currentLineFirstChar = currentLine[0];
+                            if (currentLineFirstChar == '”' || currentLineFirstChar == '"')
                             {
-                                endQuote = "”";
+                                currentLine = currentLine[1..].Trim();
+                                if (string.IsNullOrEmpty(currentLine))
+                                {
+                                    break;
+                                }
                             }
-                            if (currentLine[0] == '"')
+
+                            endQuote = currentLineFirstChar switch
                             {
-                                endQuote = "\"";
-                            }
+                                '“' => "”",
+                                '"' => "\"",
+                                _ => endQuote
+                            };
+
+                            beforeLines.Add(currentLine);
 
                             break;
                         }
                     }
 
                     beforeLines.Add(currentLine);
-
-                    if (emptyLines > 0)
-                    {
-                        break;
-                    }
                 }
 
                 beforeLines.Reverse();
@@ -144,14 +170,16 @@ public static class Matcher
             {
                 var currentIndex = index;
 
+                var noOfDotsTobeFound = 2;
+
                 // Search forwards... sort of for a .
-                var maxLineLoops = 8;
                 var length = lines.Length - 1;
                 var emptyLines = 0;
-                while (maxLineLoops > 0 && currentIndex < length)
+                var loopCount = 0;
+                while (loopCount < 8 && currentIndex < length)
                 {
                     currentIndex += 1;
-                    maxLineLoops -= 1;
+                    loopCount += 1;
 
                     var currentLine = lines[currentIndex].Trim();
                     if (string.IsNullOrWhiteSpace(currentLine))
@@ -160,7 +188,7 @@ public static class Matcher
                     }
                     else
                     {
-                        if (maxLineLoops <= 3)
+                        if (loopCount >= 5)
                         {
                             endQuote = string.Empty;
                         }
@@ -192,27 +220,39 @@ public static class Matcher
                         // ." || ".
                         if (dotIndex != -1 && endQuoteIndex != -1 && !patternFound)
                         {
-                            var endIndex = dotIndex < endQuoteIndex ? endQuoteIndex : dotIndex;
-                            currentLine = currentLine[..(endIndex + 1)].Trim();
-                            quoteString.Append(currentLine);
-                            quoteString.Append('\n');
-                            break;
+                            noOfDotsTobeFound -= 1;
+                            if (
+                                noOfDotsTobeFound == 0 || (noOfDotsTobeFound == 1 && loopCount >= 4)
+                            )
+                            {
+                                var endIndex = dotIndex < endQuoteIndex ? endQuoteIndex : dotIndex;
+                                currentLine = currentLine[..(endIndex + 1)].Trim();
+                                quoteString.Append(currentLine);
+                                quoteString.Append('\n');
+                                break;
+                            }
                         }
                         else if (
                             dotIndex != -1 && string.IsNullOrWhiteSpace(endQuote) && !patternFound
                         )
                         {
-                            currentLine = currentLine[..(dotIndex + 1)].Trim();
-                            quoteString.Append(currentLine);
-                            quoteString.Append('\n');
-                            break;
+                            noOfDotsTobeFound -= 1;
+                            if (
+                                noOfDotsTobeFound == 0 || (noOfDotsTobeFound == 1 && loopCount >= 4)
+                            )
+                            {
+                                currentLine = currentLine[..(dotIndex + 1)].Trim();
+                                quoteString.Append(currentLine);
+                                quoteString.Append('\n');
+                                break;
+                            }
                         }
                     }
 
                     quoteString.Append(currentLine);
                     quoteString.Append('\n');
 
-                    if (emptyLines > 0)
+                    if (emptyLines > 1)
                     {
                         break;
                     }
