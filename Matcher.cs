@@ -127,7 +127,7 @@ public static class Matcher
 
                             // Check for a quote directly after the . and if that is all that is on the line break
                             var currentLineFirstChar = currentLine[0];
-                            if (currentLineFirstChar == '”' || currentLineFirstChar == '"')
+                            if (currentLineFirstChar is '”' or '"')
                             {
                                 currentLine = currentLine[1..].Trim();
                                 if (string.IsNullOrEmpty(currentLine))
@@ -202,16 +202,32 @@ public static class Matcher
                             endQuote = string.Empty;
                         }
 
-                        var dotIndex = currentLine.IndexOf(".", StringComparison.Ordinal);
+                        var dotIndex = currentLine.LastIndexOf(".", StringComparison.Ordinal);
 
                         // Check for am/pm pattern
                         var patternFound = false;
-                        if (dotIndex + 2 <= currentLine.Length - 1)
+                        if (dotIndex != -1 && dotIndex + 2 <= currentLine.Length - 1)
                         {
                             var p = currentLine[dotIndex + 1];
                             var pp = currentLine[dotIndex + 2];
 
                             if (p.ToString().ToLowerInvariant() == "m" && pp.ToString() == ".")
+                            {
+                                patternFound = true;
+                            }
+                        }
+
+                        if (dotIndex != -1 && dotIndex - 3 >= 0)
+                        {
+                            var p = currentLine[dotIndex - 1].ToString().ToLowerInvariant();
+                            var pp = currentLine[dotIndex - 2].ToString().ToLowerInvariant();
+                            var ppp = currentLine[dotIndex - 3].ToString().ToLowerInvariant();
+
+                            if (
+                                !string.IsNullOrEmpty(p)
+                                && !string.IsNullOrEmpty(pp)
+                                && string.IsNullOrWhiteSpace(ppp)
+                            )
                             {
                                 patternFound = true;
                             }

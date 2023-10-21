@@ -13,11 +13,11 @@ var jsonSerializerOptions = new JsonSerializerOptions
 
 Directory.CreateDirectory("/Users/blomma/Downloads/data/");
 
-string gutPath = "./test/";
+// string gutPath = "./test/";
 
 // string gutPath = "/Users/blomma/Downloads/gutenberg";
 
-// string gutPath = "/Users/blomma/Downloads/test";
+var gutPath = "/Users/blomma/Downloads/test";
 var files = Directory.EnumerateFiles(gutPath, "*.txt", SearchOption.AllDirectories);
 var timePhrasesOneOf = Phrases.GeneratePhrases();
 
@@ -229,7 +229,7 @@ foreach (var file in files)
     var fileDirectoryDoneJson = JsonSerializer.Serialize(fileDirectoryDone, jsonSerializerOptions);
     File.WriteAllText("/Users/blomma/Downloads/data/fileDirectoryDone.json", fileDirectoryDoneJson);
 
-    if (literatureTimes.Count > 20)
+    if (literatureTimes.Count > 200)
     {
         break;
     }
