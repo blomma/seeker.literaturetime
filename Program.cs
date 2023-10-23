@@ -8,21 +8,25 @@ var jsonSerializerOptions = new JsonSerializerOptions
 {
     WriteIndented = true,
     Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-    // Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
 };
 
 Directory.CreateDirectory("/Users/blomma/Downloads/data/");
 
 // string gutPath = "./test/";
 
-// string gutPath = "/Users/blomma/Downloads/gutenberg";
+var gutPath = "/Users/blomma/Downloads/gutenberg";
 
-var gutPath = "/Users/blomma/Downloads/test";
+// var gutPath = "/Users/blomma/Downloads/test";
 var files = Directory.EnumerateFiles(gutPath, "*.txt", SearchOption.AllDirectories);
-var timePhrasesOneOf = Phrases.GeneratePhrases();
+var (timePhrasesOneOf, timePhrasesGenericOneOf) = Phrases.GeneratePhrases();
 
 var timePhrasesOneOfJson = JsonSerializer.Serialize(timePhrasesOneOf, jsonSerializerOptions);
 File.WriteAllText("/Users/blomma/Downloads/data/timePhrasesOneOf.json", timePhrasesOneOfJson);
+
+var timePhrasesGenericOneOfJson = JsonSerializer.Serialize(timePhrasesGenericOneOf, jsonSerializerOptions);
+File.WriteAllText("/Users/blomma/Downloads/data/timePhrasesGenericOneOf.json", timePhrasesGenericOneOfJson);
+
+var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 1 };
 
 var titlesExclusion = new List<string>
 {
@@ -35,13 +39,13 @@ var titlesExclusion = new List<string>
     "The Declaration of Independence"
 };
 
-List<LiteratureTime> literatureTimes = new();
+List<LiteratureTime> literatureTimes = [];
 
-var fileDirectoryDone = new List<string>();
+List<string> fileDirectoryDone = [];
 if (File.Exists("/Users/blomma/Downloads/data/fileDirectoryDone.json"))
 {
     var content = File.ReadAllText("/Users/blomma/Downloads/data/fileDirectoryDone.json");
-    fileDirectoryDone = JsonSerializer.Deserialize<List<string>>(content);
+    fileDirectoryDone = JsonSerializer.Deserialize<List<string>>(content) ?? [];
 }
 
 var totalFiles = files.Count();
@@ -187,11 +191,11 @@ foreach (var file in files)
         Parallel.For(
             startIndex + 1,
             lines.Length,
-            new ParallelOptions { MaxDegreeOfParallelism = 1 },
+            parallelOptions,
             index =>
             {
                 var line = lines[index];
-                var result = Matcher.FindMatches(timePhrasesOneOf, line);
+                var result = Matcher.FindMatches(timePhrasesOneOf, timePhrasesGenericOneOf, line);
                 if (result.Count > 0)
                 {
                     matches.TryAdd(index, result);
@@ -229,10 +233,10 @@ foreach (var file in files)
     var fileDirectoryDoneJson = JsonSerializer.Serialize(fileDirectoryDone, jsonSerializerOptions);
     File.WriteAllText("/Users/blomma/Downloads/data/fileDirectoryDone.json", fileDirectoryDoneJson);
 
-    if (literatureTimes.Count > 200)
-    {
-        break;
-    }
+    // if (literatureTimes.Count > 2000)
+    // {
+    //     break;
+    // }
 }
 
 watch.Stop();

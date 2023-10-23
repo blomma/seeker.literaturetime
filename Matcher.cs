@@ -7,11 +7,40 @@ public static class Matcher
 {
     public static List<string> FindMatches(
         Dictionary<string, List<string>> timePhrasesOneOf,
+        Dictionary<string, List<string>> timePhrasesGenericOneOf,
         string line
     )
     {
         var matches = new List<string>();
         foreach (var timePhraseOneOf in timePhrasesOneOf)
+        {
+            foreach (var phrase in timePhraseOneOf.Value)
+            {
+                var startIndex = line.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
+                if (startIndex == -1)
+                    continue;
+
+                if (startIndex == 0)
+                {
+                    matches.Add($"{timePhraseOneOf.Key}|{phrase}");
+                    break;
+                }
+
+                var beforeChar = line[startIndex - 1];
+                if (beforeChar != ' ')
+                    continue;
+
+                matches.Add($"{timePhraseOneOf.Key}|{phrase}");
+                break;
+            }
+        }
+
+        if (matches.Count > 0)
+        {
+            return matches;
+        }
+
+        foreach (var timePhraseOneOf in timePhrasesGenericOneOf)
         {
             foreach (var phrase in timePhraseOneOf.Value)
             {
@@ -90,7 +119,7 @@ public static class Matcher
                         continue;
                     }
 
-                    var dotIndex = currentLine.LastIndexOf(".", StringComparison.Ordinal);
+                    var dotIndex = currentLine.LastIndexOf('.');
 
                     // Check for am/pm pattern
                     var patternFound = false;
