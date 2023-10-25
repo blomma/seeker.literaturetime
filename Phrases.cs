@@ -462,7 +462,18 @@ public static class Phrases
             }
 
             // AM
-            if (startOfDay is { Hour: < 12, Minute: > 57 })
+            if (startOfDay is { Hour: < 12, Minute: > 0 and < 4 })
+            {
+                var hour = startOfDay.Hour;
+                var hourWord = NumberToWord[hour];
+
+                currentTimePhrasesOneOf.Add($"about {hourWord} in the morning");
+                currentTimePhrasesOneOf.Add($"about {hourWord} in the morn");
+                currentTimePhrasesOneOf.Add($"about {hourWord} in the morning");
+                currentTimePhrasesOneOf.Add($"about {hourWord} in the morn");
+            }
+
+            if (startOfDay is { Hour: < 12, Minute: >= 56 and < 60 })
             {
                 var toHour = startOfDay.Hour + 1;
                 var toHourWord = NumberToWord[toHour];
@@ -471,6 +482,11 @@ public static class Phrases
                 currentTimePhrasesOneOf.Add($"almost at {toHourWord} in the morn");
                 currentTimePhrasesOneOf.Add($"almost at {toHour} in the morning");
                 currentTimePhrasesOneOf.Add($"almost at {toHour} in the morn");
+
+                currentTimePhrasesOneOf.Add($"about {toHourWord} in the morning");
+                currentTimePhrasesOneOf.Add($"about {toHourWord} in the morn");
+                currentTimePhrasesOneOf.Add($"about {toHour} in the morning");
+                currentTimePhrasesOneOf.Add($"about {toHour} in the morn");
             }
 
             if (startOfDay is { Hour: < 12, Minute: 30 })
@@ -506,7 +522,16 @@ public static class Phrases
             }
 
             // PM
-            if (startOfDay is { Hour: >= 12, Minute: > 57 })
+            if (startOfDay is { Hour: >= 12, Minute: > 0 and < 4 })
+            {
+                var hour = startOfDay.Hour;
+                var hourWord = NumberToWord[hour];
+
+                currentTimePhrasesOneOf.Add($"about {hourWord} at night");
+                currentTimePhrasesOneOf.Add($"about {hourWord} at night");
+            }
+
+            if (startOfDay is { Hour: >= 12, Minute: >= 56 and < 60 })
             {
                 var toHour = startOfDay.Hour - 12 + 1;
                 var toHourWord = NumberToWord[toHour];

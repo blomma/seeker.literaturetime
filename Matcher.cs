@@ -18,17 +18,24 @@ public static class Matcher
             {
                 var startIndex = line.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
                 if (startIndex == -1)
-                    continue;
-
-                if (startIndex == 0)
                 {
-                    matches.Add($"{timePhraseOneOf.Key}|{phrase}");
-                    break;
+                    continue;
                 }
 
-                var beforeChar = line[startIndex - 1];
-                if (beforeChar != ' ')
+                // The match is not at the start of the line, so we check that
+                // the character before it is a whitespace
+                if (startIndex > 0 && line[startIndex - 1] != ' ')
+                {
                     continue;
+                }
+
+                // The match is not the last thing on the line, so we check that
+                // the character after it is a whitespace
+                var lastIndex = startIndex + phrase.Length - 1;
+                if (lastIndex < (line.Length - 1) && line[lastIndex + 1] != ' ')
+                {
+                    continue;
+                }
 
                 matches.Add($"{timePhraseOneOf.Key}|{phrase}");
                 break;
@@ -46,17 +53,24 @@ public static class Matcher
             {
                 var startIndex = line.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
                 if (startIndex == -1)
-                    continue;
-
-                if (startIndex == 0)
                 {
-                    matches.Add($"{timePhraseOneOf.Key}|{phrase}");
-                    break;
+                    continue;
                 }
 
-                var beforeChar = line[startIndex - 1];
-                if (beforeChar != ' ')
+                // The match is not at the start of the line, so we check that
+                // the character before it is a whitespace
+                if (startIndex > 0 && line[startIndex - 1] != ' ')
+                {
                     continue;
+                }
+
+                // The match is not the last thing on the line, so we check that
+                // the character after it is a whitespace
+                var lastIndex = startIndex + phrase.Length - 1;
+                if (lastIndex < (line.Length - 1) && line[lastIndex + 1] != ' ')
+                {
+                    continue;
+                }
 
                 matches.Add($"{timePhraseOneOf.Key}|{phrase}");
                 break;
@@ -108,10 +122,10 @@ public static class Matcher
                     loopCount += 1;
 
                     var currentLine = lines[currentIndex].Trim();
-                    if (string.IsNullOrWhiteSpace(currentLine))
+                    if (string.IsNullOrEmpty(currentLine))
                     {
                         emptyLines += 1;
-                        if (emptyLines > 0)
+                        if (emptyLines > 1)
                         {
                             break;
                         }
@@ -149,7 +163,7 @@ public static class Matcher
                         if (noOfDotsTobeFound == 0 || (noOfDotsTobeFound == 1 && loopCount >= 4))
                         {
                             currentLine = currentLine[(dotIndex + 1)..].Trim();
-                            if (string.IsNullOrWhiteSpace(currentLine))
+                            if (string.IsNullOrEmpty(currentLine))
                             {
                                 break;
                             }
@@ -194,7 +208,7 @@ public static class Matcher
 
             if (
                 !matchLine.AsSpan().EndsWith(".", StringComparison.InvariantCulture)
-                || !string.IsNullOrWhiteSpace(endQuote)
+                || !string.IsNullOrEmpty(endQuote)
             )
             {
                 var currentIndex = index;
@@ -211,96 +225,82 @@ public static class Matcher
                     loopCount += 1;
 
                     var currentLine = lines[currentIndex].Trim();
-                    if (string.IsNullOrWhiteSpace(currentLine))
+                    if (string.IsNullOrEmpty(currentLine))
                     {
                         emptyLines += 1;
+                        if (emptyLines > 1)
+                        {
+                            break;
+                        }
+                        continue;
                     }
-                    else
+
+                    if (loopCount >= 5)
                     {
-                        if (loopCount >= 5)
+                        endQuote = string.Empty;
+                    }
+
+                    var endQuoteIndex = !string.IsNullOrEmpty(endQuote)
+                        ? currentLine.IndexOf(endQuote, StringComparison.OrdinalIgnoreCase)
+                        : -1;
+
+                    if (endQuoteIndex != -1)
+                    {
+                        endQuote = string.Empty;
+                    }
+
+                    var dotIndex = currentLine.LastIndexOf('.');
+
+                    // Check for a.m./p.m. pattern
+                    var patternFound = false;
+                    if (dotIndex - 2 > 0)
+                    {
+                        var p = currentLine[dotIndex - 1].ToString().ToLowerInvariant();
+                        var pp = currentLine[dotIndex - 2].ToString().ToLowerInvariant();
+
+                        switch (p)
                         {
-                            endQuote = string.Empty;
-                        }
-
-                        var endQuoteIndex = !string.IsNullOrWhiteSpace(endQuote)
-                            ? currentLine.IndexOf(endQuote, StringComparison.OrdinalIgnoreCase)
-                            : -1;
-
-                        if (endQuoteIndex != -1)
-                        {
-                            endQuote = string.Empty;
-                        }
-
-                        var dotIndex = currentLine.LastIndexOf(".", StringComparison.Ordinal);
-
-                        // Check for am/pm pattern
-                        var patternFound = false;
-                        if (dotIndex != -1 && dotIndex + 2 <= currentLine.Length - 1)
-                        {
-                            var p = currentLine[dotIndex + 1];
-                            var pp = currentLine[dotIndex + 2];
-
-                            if (p.ToString().ToLowerInvariant() == "m" && pp.ToString() == ".")
-                            {
+                            case "m" when pp == ".":
                                 patternFound = true;
-                            }
-                        }
-
-                        if (dotIndex != -1 && dotIndex - 3 >= 0)
-                        {
-                            var p = currentLine[dotIndex - 1].ToString().ToLowerInvariant();
-                            var pp = currentLine[dotIndex - 2].ToString().ToLowerInvariant();
-                            var ppp = currentLine[dotIndex - 3].ToString().ToLowerInvariant();
-
-                            if (
-                                !string.IsNullOrEmpty(p)
-                                && !string.IsNullOrEmpty(pp)
-                                && string.IsNullOrWhiteSpace(ppp)
-                            )
-                            {
-                                patternFound = true;
-                            }
-                        }
-
-                        // ." || ".
-                        if (dotIndex != -1 && endQuoteIndex != -1 && !patternFound)
-                        {
-                            noOfDotsTobeFound -= 1;
-                            if (
-                                noOfDotsTobeFound == 0 || (noOfDotsTobeFound == 1 && loopCount >= 4)
-                            )
-                            {
-                                var endIndex = dotIndex < endQuoteIndex ? endQuoteIndex : dotIndex;
-                                currentLine = currentLine[..(endIndex + 1)].Trim();
-                                quoteString.Append(currentLine);
-                                quoteString.Append('\n');
                                 break;
-                            }
                         }
-                        else if (
-                            dotIndex != -1 && string.IsNullOrWhiteSpace(endQuote) && !patternFound
-                        )
+                    }
+
+                    if (patternFound)
+                    {
+                        quoteString.Append(currentLine);
+                        quoteString.Append('\n');
+
+                        continue;
+                    }
+
+                    // ." || ".
+                    if (dotIndex != -1 && endQuoteIndex != -1)
+                    {
+                        noOfDotsTobeFound -= 1;
+                        if (noOfDotsTobeFound == 0 || (noOfDotsTobeFound == 1 && loopCount >= 4))
                         {
-                            noOfDotsTobeFound -= 1;
-                            if (
-                                noOfDotsTobeFound == 0 || (noOfDotsTobeFound == 1 && loopCount >= 4)
-                            )
-                            {
-                                currentLine = currentLine[..(dotIndex + 1)].Trim();
-                                quoteString.Append(currentLine);
-                                quoteString.Append('\n');
-                                break;
-                            }
+                            var endIndex = dotIndex < endQuoteIndex ? endQuoteIndex : dotIndex;
+                            currentLine = currentLine[..(endIndex + 1)].Trim();
+                            quoteString.Append(currentLine);
+                            quoteString.Append('\n');
+                            break;
+                        }
+                    }
+                    else if (dotIndex != -1 && string.IsNullOrEmpty(endQuote))
+                    {
+                        noOfDotsTobeFound -= 1;
+                        if (noOfDotsTobeFound == 0 || (noOfDotsTobeFound == 1 && loopCount >= 4))
+                        {
+                            currentLine = currentLine[..(dotIndex + 1)].Trim();
+                            quoteString.Append(currentLine);
+                            quoteString.Append('\n');
+                            break;
                         }
                     }
 
                     quoteString.Append(currentLine);
                     quoteString.Append('\n');
-
-                    if (emptyLines > 1)
-                    {
-                        break;
-                    }
                 }
             }
 

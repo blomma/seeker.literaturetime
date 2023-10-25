@@ -1,1 +1,1 @@
-rsync -avmz --delete --delete-excluded --include='*.txt' -f 'hide,! */' -f '- cache/' aleph.gutenberg.org::gutenberg gutenberg
+rsync -avmz --delete --delete-excluded --include='*.txt' -f 'hide,! */' -f '- cache/' -f '- etext*/' aleph.gutenberg.org::gutenberg gutenberg

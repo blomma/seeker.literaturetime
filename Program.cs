@@ -36,7 +36,26 @@ var titlesExclusion = new List<string>
     "The Bible, Douay-Rheims, Old Testament--Part I",
     "The Bible, Douay-Rheims, New Testament",
     "The Declaration of Independence",
-    "The Declaration of Independence"
+    "The Declaration of Independence",
+    "The Antiquities of the Jews",
+    "Science and Health With Key to The Scriptures",
+    "The Gospels in Four Part Harmony",
+    "They Call Me Carpenter",
+    "Introduction to Robert Browning",
+    "Commentary on the Epistle to the Galatians"
+};
+
+var authorExclusion = new List<string>
+{
+    "Flavius Josephus",
+    "Mary Baker Eddy",
+    "J. Clontz",
+    "John Bunyan",
+    "Joseph Stump",
+    "Rev. William Evans",
+    "Henry F. Lutz",
+    "E. B. Stewart",
+    "Henry T. Sell"
 };
 
 List<LiteratureTime> literatureTimes = [];
@@ -127,7 +146,7 @@ foreach (var file in files)
         if (line.StartsWith("Language:", StringComparison.OrdinalIgnoreCase))
         {
             language = line.Replace("Language:", "").Trim();
-            if (string.IsNullOrWhiteSpace(language))
+            if (string.IsNullOrEmpty(language))
             {
                 break;
             }
@@ -148,8 +167,7 @@ foreach (var file in files)
         if (line.StartsWith("Title: ", StringComparison.OrdinalIgnoreCase))
         {
             title = line.Replace("Title:", "").Trim();
-
-            if (string.IsNullOrWhiteSpace(title))
+            if (string.IsNullOrEmpty(title))
             {
                 break;
             }
@@ -165,8 +183,12 @@ foreach (var file in files)
         if (line.StartsWith("Author: ", StringComparison.OrdinalIgnoreCase))
         {
             author = line.Replace("Author:", "").Trim();
+            if (string.IsNullOrEmpty(author))
+            {
+                break;
+            }
 
-            if (string.IsNullOrWhiteSpace(author))
+            if (authorExclusion.Contains(author))
             {
                 break;
             }
@@ -175,8 +197,8 @@ foreach (var file in files)
         }
 
         if (
-            !string.IsNullOrWhiteSpace(title)
-            && !string.IsNullOrWhiteSpace(author) & !string.IsNullOrWhiteSpace(language)
+            !string.IsNullOrEmpty(title)
+            && !string.IsNullOrEmpty(author) & !string.IsNullOrEmpty(language)
         )
         {
             startIndex = i;
@@ -233,10 +255,10 @@ foreach (var file in files)
     var fileDirectoryDoneJson = JsonSerializer.Serialize(fileDirectoryDone, jsonSerializerOptions);
     File.WriteAllText("/Users/blomma/Downloads/data/fileDirectoryDone.json", fileDirectoryDoneJson);
 
-    // if (literatureTimes.Count > 2000)
-    // {
-    //     break;
-    // }
+    if (literatureTimes.Count > 20)
+    {
+        break;
+    }
 }
 
 watch.Stop();
