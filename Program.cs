@@ -18,13 +18,20 @@ var gutPath = "/Users/blomma/Downloads/gutenberg";
 
 // var gutPath = "/Users/blomma/Downloads/test";
 var files = Directory.EnumerateFiles(gutPath, "*.txt", SearchOption.AllDirectories);
-var (timePhrasesOneOf, timePhrasesGenericOneOf) = Phrases.GeneratePhrases();
+var (timePhrasesOneOf, timePhrasesGenericOneOf, timePhrasesSuperGenericOneOf) =
+    Phrases.GeneratePhrases();
 
 var timePhrasesOneOfJson = JsonSerializer.Serialize(timePhrasesOneOf, jsonSerializerOptions);
 File.WriteAllText("/Users/blomma/Downloads/data/timePhrasesOneOf.json", timePhrasesOneOfJson);
 
-var timePhrasesGenericOneOfJson = JsonSerializer.Serialize(timePhrasesGenericOneOf, jsonSerializerOptions);
-File.WriteAllText("/Users/blomma/Downloads/data/timePhrasesGenericOneOf.json", timePhrasesGenericOneOfJson);
+var timePhrasesGenericOneOfJson = JsonSerializer.Serialize(
+    timePhrasesGenericOneOf,
+    jsonSerializerOptions
+);
+File.WriteAllText(
+    "/Users/blomma/Downloads/data/timePhrasesGenericOneOf.json",
+    timePhrasesGenericOneOfJson
+);
 
 var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 1 };
 
@@ -42,7 +49,12 @@ var titlesExclusion = new List<string>
     "The Gospels in Four Part Harmony",
     "They Call Me Carpenter",
     "Introduction to Robert Browning",
-    "Commentary on the Epistle to the Galatians"
+    "Commentary on the Epistle to the Galatians",
+    "The Bible, King James Version",
+    "Weymouth New Testament in Modern Speech, Preface and Introductions",
+    "An Explanation of Luther's Small Catechism",
+    "The Confutatio Pontificia",
+    "The Great Doctrines of the Bible"
 };
 
 var authorExclusion = new List<string>
@@ -58,13 +70,13 @@ var authorExclusion = new List<string>
     "Henry T. Sell"
 };
 
-List<LiteratureTime> literatureTimes = [];
+List<LiteratureTime> literatureTimes = new();
 
-List<string> fileDirectoryDone = [];
+List<string> fileDirectoryDone = new();
 if (File.Exists("/Users/blomma/Downloads/data/fileDirectoryDone.json"))
 {
     var content = File.ReadAllText("/Users/blomma/Downloads/data/fileDirectoryDone.json");
-    fileDirectoryDone = JsonSerializer.Deserialize<List<string>>(content) ?? [];
+    fileDirectoryDone = JsonSerializer.Deserialize<List<string>>(content) ?? new();
 }
 
 var totalFiles = files.Count();
@@ -206,7 +218,7 @@ foreach (var file in files)
         }
     }
 
-    var matches = new ConcurrentDictionary<int, List<string>>();
+    var matches = new ConcurrentDictionary<int, Dictionary<string, string>>();
 
     if (startIndex != -1)
     {
@@ -217,7 +229,12 @@ foreach (var file in files)
             index =>
             {
                 var line = lines[index];
-                var result = Matcher.FindMatches(timePhrasesOneOf, timePhrasesGenericOneOf, line);
+                var result = Matcher.FindMatches(
+                    timePhrasesOneOf,
+                    timePhrasesGenericOneOf,
+                    timePhrasesSuperGenericOneOf,
+                    line
+                );
                 if (result.Count > 0)
                 {
                     matches.TryAdd(index, result);
@@ -255,10 +272,10 @@ foreach (var file in files)
     var fileDirectoryDoneJson = JsonSerializer.Serialize(fileDirectoryDone, jsonSerializerOptions);
     File.WriteAllText("/Users/blomma/Downloads/data/fileDirectoryDone.json", fileDirectoryDoneJson);
 
-    if (literatureTimes.Count > 20)
-    {
-        break;
-    }
+    // if (literatureTimes.Count > 200)
+    // {
+    //     break;
+    // }
 }
 
 watch.Stop();

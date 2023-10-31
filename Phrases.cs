@@ -68,28 +68,37 @@ public static class Phrases
             { 60, "sixty" },
         };
 
-    private static List<string> AppendAm(string timePhrase) => [
+    private static List<string> AppendAm(string timePhrase) =>
+        new()
+        {
             $"{timePhrase}am",
             $"{timePhrase}a.m.",
             $"{timePhrase} am",
             $"{timePhrase} a.m.",
             $"{timePhrase}  am",
             $"{timePhrase}  a.m."
-        ];
+        };
 
-    private static List<string> AppendPm(string timePhrase) => [
+    private static List<string> AppendPm(string timePhrase) =>
+        new()
+        {
             $"{timePhrase}pm",
             $"{timePhrase}p.m.",
             $"{timePhrase} pm",
             $"{timePhrase} p.m.",
             $"{timePhrase}  pm",
             $"{timePhrase}  p.m."
-        ];
+        };
 
-    public static (Dictionary<string, List<string>>, Dictionary<string, List<string>>) GeneratePhrases()
+    public static (
+        Dictionary<string, List<string>>,
+        Dictionary<string, List<string>>,
+        Dictionary<string, List<string>>
+    ) GeneratePhrases()
     {
         var timePhrasesOneOf = new Dictionary<string, List<string>>();
         var timePhrasesGenericOneOf = new Dictionary<string, List<string>>();
+        var timePhrasesSuperGenericOneOf = new Dictionary<string, List<string>>();
 
         var startOfDay = DateTime.Now.Date;
         var endOfDay = startOfDay.Date.AddDays(1).AddTicks(-1);
@@ -101,6 +110,7 @@ public static class Phrases
 
             var currentTimePhrasesOneOf = new List<string>();
             var currentTimePhrasesGenericOneOf = new List<string>();
+            var currentTimePhrasesSuperGenericOneOf = new List<string>();
 
             // AM
             if (startOfDay.Hour < 12)
@@ -153,13 +163,19 @@ public static class Phrases
 
                 if (startOfDay.Minute < 4)
                 {
+                    currentTimePhrasesOneOf.AddRange(AppendAm($"a little after {hourWord}"));
+                    currentTimePhrasesOneOf.AddRange(AppendAm($"a little after {hour}"));
+
                     currentTimePhrasesOneOf.AddRange(AppendAm($"just after {hourWord}"));
                     currentTimePhrasesOneOf.AddRange(AppendAm($"just after {hour}"));
+
+                    currentTimePhrasesOneOf.AddRange(AppendAm($"about {hourWord}"));
+                    currentTimePhrasesOneOf.AddRange(AppendAm($"about {hour}"));
                 }
             }
 
             // PM
-            if (startOfDay.Hour >= 12)
+            if (startOfDay is { Hour: >= 12 and <= 23 })
             {
                 switch (startOfDay.Minute)
                 {
@@ -175,7 +191,7 @@ public static class Phrases
                 currentTimePhrasesOneOf.AddRange(AppendPm($"{startOfDay:h:mm}"));
             }
 
-            if (startOfDay is { Hour: >= 12, Minute: > 0 })
+            if (startOfDay is { Hour: >= 12 and <= 23, Minute: > 0 })
             {
                 var hour = startOfDay.Hour == 12 ? startOfDay.Hour : startOfDay.Hour - 12;
                 var hourWord = NumberToWord[hour];
@@ -209,8 +225,14 @@ public static class Phrases
 
                 if (startOfDay.Minute < 4)
                 {
+                    currentTimePhrasesOneOf.AddRange(AppendPm($"a little after {hourWord}"));
+                    currentTimePhrasesOneOf.AddRange(AppendPm($"a little after {hour}"));
+
                     currentTimePhrasesOneOf.AddRange(AppendPm($"just after {hourWord}"));
                     currentTimePhrasesOneOf.AddRange(AppendPm($"just after {hour}"));
+
+                    currentTimePhrasesOneOf.AddRange(AppendPm($"about {hourWord}"));
+                    currentTimePhrasesOneOf.AddRange(AppendPm($"about {hour}"));
                 }
             }
 
@@ -249,6 +271,15 @@ public static class Phrases
                             AppendAm($"a little after {hour} o’clock")
                         );
 
+                        currentTimePhrasesOneOf.AddRange(
+                            AppendAm($"just after {hourWord} o'clock")
+                        );
+                        currentTimePhrasesOneOf.AddRange(
+                            AppendAm($"just after {hourWord} o’clock")
+                        );
+                        currentTimePhrasesOneOf.AddRange(AppendAm($"just after {hour} o'clock"));
+                        currentTimePhrasesOneOf.AddRange(AppendAm($"just after {hour} o’clock"));
+
                         currentTimePhrasesOneOf.AddRange(AppendAm($"about {hourWord} o'clock"));
                         currentTimePhrasesOneOf.AddRange(AppendAm($"about {hourWord} o’clock"));
                         currentTimePhrasesOneOf.AddRange(AppendAm($"about {hour} o'clock"));
@@ -272,10 +303,21 @@ public static class Phrases
                         break;
                     case 45:
                         currentTimePhrasesOneOf.AddRange(AppendAm($"quarter to {toHourWord}"));
+                        currentTimePhrasesOneOf.AddRange(AppendAm($"quarter-to {toHourWord}"));
                         currentTimePhrasesOneOf.AddRange(AppendAm($"quarter to {toHour}"));
+                        currentTimePhrasesOneOf.AddRange(AppendAm($"quarter-to {toHour}"));
                         break;
-                    case >= 56
+                    case >= 57
                     and < 60:
+                        currentTimePhrasesOneOf.AddRange(
+                            AppendAm($"almost at {toHourWord} o'clock")
+                        );
+                        currentTimePhrasesOneOf.AddRange(
+                            AppendAm($"almost at {toHourWord} o’clock")
+                        );
+                        currentTimePhrasesOneOf.AddRange(AppendAm($"almost at {toHour} o'clock"));
+                        currentTimePhrasesOneOf.AddRange(AppendAm($"almost at {toHour} o’clock"));
+
                         currentTimePhrasesOneOf.AddRange(AppendAm($"nearly {toHourWord} o'clock"));
                         currentTimePhrasesOneOf.AddRange(AppendAm($"nearly {toHourWord} o’clock"));
                         currentTimePhrasesOneOf.AddRange(AppendAm($"nearly {toHour} o'clock"));
@@ -290,12 +332,12 @@ public static class Phrases
             }
 
             // PM
-            if (startOfDay.Hour is >= 12 and <= 23 && startOfDay.Minute > 0)
+            if (startOfDay is { Hour: >= 12 and <= 23, Minute: > 0 })
             {
                 var hour = startOfDay.Hour == 12 ? startOfDay.Hour : startOfDay.Hour - 12;
                 var hourWord = NumberToWord[hour];
 
-                var toHour = startOfDay.Hour - 12 + 1;
+                var toHour = hour + 1;
                 var toHourWord = NumberToWord[toHour];
 
                 var toMinute = 60 - startOfDay.Minute;
@@ -325,6 +367,15 @@ public static class Phrases
                             AppendPm($"a little after {hour} o’clock")
                         );
 
+                        currentTimePhrasesOneOf.AddRange(
+                            AppendPm($"just after {hourWord} o'clock")
+                        );
+                        currentTimePhrasesOneOf.AddRange(
+                            AppendPm($"just after {hourWord} o’clock")
+                        );
+                        currentTimePhrasesOneOf.AddRange(AppendPm($"just after {hour} o'clock"));
+                        currentTimePhrasesOneOf.AddRange(AppendPm($"just after {hour} o’clock"));
+
                         currentTimePhrasesOneOf.AddRange(AppendPm($"about {hourWord} o'clock"));
                         currentTimePhrasesOneOf.AddRange(AppendPm($"about {hourWord} o’clock"));
                         currentTimePhrasesOneOf.AddRange(AppendPm($"about {hour} o'clock"));
@@ -336,7 +387,6 @@ public static class Phrases
                         currentTimePhrasesOneOf.AddRange(AppendPm($"quarter-past {hourWord}"));
                         currentTimePhrasesOneOf.AddRange(AppendPm($"quarter after {hourWord}"));
                         currentTimePhrasesOneOf.AddRange(AppendPm($"quarter-after {hourWord}"));
-
                         currentTimePhrasesOneOf.AddRange(AppendPm($"quarter past {hour}"));
                         currentTimePhrasesOneOf.AddRange(AppendPm($"quarter-past {hour}"));
                         currentTimePhrasesOneOf.AddRange(AppendPm($"quarter after {hour}"));
@@ -350,10 +400,21 @@ public static class Phrases
                         break;
                     case 45:
                         currentTimePhrasesOneOf.AddRange(AppendPm($"quarter to {toHourWord}"));
+                        currentTimePhrasesOneOf.AddRange(AppendPm($"quarter-to {toHourWord}"));
                         currentTimePhrasesOneOf.AddRange(AppendPm($"quarter to {toHour}"));
+                        currentTimePhrasesOneOf.AddRange(AppendPm($"quarter-to {toHour}"));
                         break;
-                    case >= 56
+                    case >= 57
                     and < 60:
+                        currentTimePhrasesOneOf.AddRange(
+                            AppendPm($"almost at {toHourWord} o'clock")
+                        );
+                        currentTimePhrasesOneOf.AddRange(
+                            AppendPm($"almost at {toHourWord} o’clock")
+                        );
+                        currentTimePhrasesOneOf.AddRange(AppendPm($"almost at {toHour} o'clock"));
+                        currentTimePhrasesOneOf.AddRange(AppendPm($"almost at {toHour} o’clock"));
+
                         currentTimePhrasesOneOf.AddRange(AppendPm($"nearly {toHourWord} o'clock"));
                         currentTimePhrasesOneOf.AddRange(AppendPm($"nearly {toHourWord} o’clock"));
                         currentTimePhrasesOneOf.AddRange(AppendPm($"nearly {toHour} o'clock"));
@@ -380,7 +441,9 @@ public static class Phrases
                 var toMinuteWord = NumberToWord[toMinute];
 
                 // twelve minute(s) to nineteen
-                currentTimePhrasesGenericOneOf.Add($"{toMinuteWord} {toMinutePlural} to {toHourWord}");
+                currentTimePhrasesGenericOneOf.Add(
+                    $"{toMinuteWord} {toMinutePlural} to {toHourWord}"
+                );
                 currentTimePhrasesGenericOneOf.Add($"{toMinute} {toMinutePlural} to {toHour}");
 
                 switch (startOfDay.Minute)
@@ -390,6 +453,11 @@ public static class Phrases
                         currentTimePhrasesGenericOneOf.Add($"a little after {hourWord} o’clock");
                         currentTimePhrasesGenericOneOf.Add($"a little after {hour} o'clock");
                         currentTimePhrasesGenericOneOf.Add($"a little after {hour} o’clock");
+
+                        currentTimePhrasesGenericOneOf.Add($"just after {hourWord} o'clock");
+                        currentTimePhrasesGenericOneOf.Add($"just after {hourWord} o’clock");
+                        currentTimePhrasesGenericOneOf.Add($"just after {hour} o'clock");
+                        currentTimePhrasesGenericOneOf.Add($"just after {hour} o’clock");
 
                         currentTimePhrasesGenericOneOf.Add($"about {hourWord} o'clock");
                         currentTimePhrasesGenericOneOf.Add($"about {hourWord} o’clock");
@@ -414,10 +482,17 @@ public static class Phrases
                         break;
                     case 45:
                         currentTimePhrasesGenericOneOf.Add($"quarter to {toHourWord}");
+                        currentTimePhrasesGenericOneOf.Add($"quarter-to {toHourWord}");
                         currentTimePhrasesGenericOneOf.Add($"quarter to {toHour}");
+                        currentTimePhrasesGenericOneOf.Add($"quarter-to {toHour}");
                         break;
-                    case >= 56
+                    case >= 57
                     and < 60:
+                        currentTimePhrasesGenericOneOf.Add($"almost at {toHourWord} o'clock");
+                        currentTimePhrasesGenericOneOf.Add($"almost at {toHourWord} o’clock");
+                        currentTimePhrasesGenericOneOf.Add($"almost at {toHour} o'clock");
+                        currentTimePhrasesGenericOneOf.Add($"almost at {toHour} o’clock");
+
                         currentTimePhrasesGenericOneOf.Add($"nearly {toHourWord} o'clock");
                         currentTimePhrasesGenericOneOf.Add($"nearly {toHourWord} o’clock");
                         currentTimePhrasesGenericOneOf.Add($"nearly {toHour} o'clock");
@@ -447,7 +522,7 @@ public static class Phrases
             }
 
             // PM
-            if (startOfDay is { Hour: >= 12, Minute: 0 })
+            if (startOfDay is { Hour: >= 12 and <= 23, Minute: 0 })
             {
                 var hour = startOfDay.Hour == 12 ? startOfDay.Hour : startOfDay.Hour - 12;
                 var hourWord = NumberToWord[hour];
@@ -462,42 +537,103 @@ public static class Phrases
             }
 
             // AM
-            if (startOfDay is { Hour: < 12, Minute: > 0 and < 4 })
+            if (startOfDay is { Hour: < 12, Minute: > 0 })
             {
                 var hour = startOfDay.Hour;
                 var hourWord = NumberToWord[hour];
 
-                currentTimePhrasesOneOf.Add($"about {hourWord} in the morning");
-                currentTimePhrasesOneOf.Add($"about {hourWord} in the morn");
-                currentTimePhrasesOneOf.Add($"about {hourWord} in the morning");
-                currentTimePhrasesOneOf.Add($"about {hourWord} in the morn");
-            }
-
-            if (startOfDay is { Hour: < 12, Minute: >= 56 and < 60 })
-            {
                 var toHour = startOfDay.Hour + 1;
                 var toHourWord = NumberToWord[toHour];
 
-                currentTimePhrasesOneOf.Add($"almost at {toHourWord} in the morning");
-                currentTimePhrasesOneOf.Add($"almost at {toHourWord} in the morn");
-                currentTimePhrasesOneOf.Add($"almost at {toHour} in the morning");
-                currentTimePhrasesOneOf.Add($"almost at {toHour} in the morn");
+                switch (startOfDay.Minute)
+                {
+                    case < 4:
+                        currentTimePhrasesOneOf.Add($"a little after {hourWord} in the morning");
+                        currentTimePhrasesOneOf.Add($"a little after {hourWord} in the morn");
+                        currentTimePhrasesOneOf.Add($"a little after {hour} in the morning");
+                        currentTimePhrasesOneOf.Add($"a little after {hour} in the morn");
 
-                currentTimePhrasesOneOf.Add($"about {toHourWord} in the morning");
-                currentTimePhrasesOneOf.Add($"about {toHourWord} in the morn");
-                currentTimePhrasesOneOf.Add($"about {toHour} in the morning");
-                currentTimePhrasesOneOf.Add($"about {toHour} in the morn");
-            }
+                        currentTimePhrasesOneOf.Add($"just after {hourWord} in the morning");
+                        currentTimePhrasesOneOf.Add($"just after {hourWord} in the morn");
+                        currentTimePhrasesOneOf.Add($"just after {hour} in the morning");
+                        currentTimePhrasesOneOf.Add($"just after {hour} in the morn");
 
-            if (startOfDay is { Hour: < 12, Minute: 30 })
-            {
-                var hour = startOfDay.Hour;
-                var hourWord = NumberToWord[hour];
+                        currentTimePhrasesOneOf.Add($"about {hourWord} in the morning");
+                        currentTimePhrasesOneOf.Add($"about {hourWord} in the morn");
+                        currentTimePhrasesOneOf.Add($"about {hour} in the morning");
+                        currentTimePhrasesOneOf.Add($"about {hour} in the morn");
 
-                currentTimePhrasesOneOf.Add($"half past {hourWord} in the morning");
-                currentTimePhrasesOneOf.Add($"half past {hourWord} in the morn");
-                currentTimePhrasesOneOf.Add($"half past {hour} in the morning");
-                currentTimePhrasesOneOf.Add($"half past {hour} in the morn");
+                        currentTimePhrasesOneOf.Add($"about {hourWord} o’clock in the morning");
+                        currentTimePhrasesOneOf.Add($"about {hourWord} o’clock in the morn");
+                        currentTimePhrasesOneOf.Add($"about {hour} o’clock in the morning");
+                        currentTimePhrasesOneOf.Add($"about {hour} o’clock in the morn");
+
+                        currentTimePhrasesOneOf.Add($"about {hourWord} o'clock in the morning");
+                        currentTimePhrasesOneOf.Add($"about {hourWord} o'clock in the morn");
+                        currentTimePhrasesOneOf.Add($"about {hour} o'clock in the morning");
+                        currentTimePhrasesOneOf.Add($"about {hour} o'clock in the morn");
+                        break;
+                    case 15:
+                        currentTimePhrasesOneOf.Add($"quarter past {hourWord} in the morning");
+                        currentTimePhrasesOneOf.Add($"quarter-past {hourWord} in the morning");
+                        currentTimePhrasesOneOf.Add($"quarter past {hourWord} in the morn");
+                        currentTimePhrasesOneOf.Add($"quarter-past {hourWord} in the morn");
+                        currentTimePhrasesOneOf.Add($"quarter past {hour} in the morning");
+                        currentTimePhrasesOneOf.Add($"quarter-past {hour} in the morning");
+                        currentTimePhrasesOneOf.Add($"quarter past {hour} in the morn");
+                        currentTimePhrasesOneOf.Add($"quarter-past {hour} in the morn");
+                        break;
+
+                    case 30:
+                        currentTimePhrasesOneOf.Add($"half past {hourWord} in the morning");
+                        currentTimePhrasesOneOf.Add($"half-past {hourWord} in the morning");
+                        currentTimePhrasesOneOf.Add($"half past {hourWord} in the morn");
+                        currentTimePhrasesOneOf.Add($"half-past {hourWord} in the morn");
+                        currentTimePhrasesOneOf.Add($"half past {hour} in the morning");
+                        currentTimePhrasesOneOf.Add($"half-past {hour} in the morning");
+                        currentTimePhrasesOneOf.Add($"half past {hour} in the morn");
+                        currentTimePhrasesOneOf.Add($"half-past {hour} in the morn");
+                        break;
+
+                    case 45:
+                        currentTimePhrasesOneOf.Add($"quarter to {toHourWord} in the morning");
+                        currentTimePhrasesOneOf.Add($"quarter to {toHourWord} in the morn");
+                        currentTimePhrasesOneOf.Add($"quarter-to {toHourWord} in the morning");
+                        currentTimePhrasesOneOf.Add($"quarter-to {toHourWord} in the morn");
+                        currentTimePhrasesOneOf.Add($"quarter to {toHour} in the morning");
+                        currentTimePhrasesOneOf.Add($"quarter to {toHour} in the morn");
+                        currentTimePhrasesOneOf.Add($"quarter-to {toHour} in the morning");
+                        currentTimePhrasesOneOf.Add($"quarter-to {toHour} in the morn");
+                        break;
+
+                    case >= 57
+                    and < 60:
+                        currentTimePhrasesOneOf.Add($"almost at {toHourWord} in the morning");
+                        currentTimePhrasesOneOf.Add($"almost at {toHourWord} in the morn");
+                        currentTimePhrasesOneOf.Add($"almost at {toHour} in the morning");
+                        currentTimePhrasesOneOf.Add($"almost at {toHour} in the morn");
+
+                        currentTimePhrasesOneOf.Add($"nearly {toHourWord} in the morning");
+                        currentTimePhrasesOneOf.Add($"nearly {toHourWord} in the morn");
+                        currentTimePhrasesOneOf.Add($"nearly {toHour} in the morning");
+                        currentTimePhrasesOneOf.Add($"nearly {toHour} in the morn");
+
+                        currentTimePhrasesOneOf.Add($"about {toHourWord} in the morning");
+                        currentTimePhrasesOneOf.Add($"about {toHourWord} in the morn");
+                        currentTimePhrasesOneOf.Add($"about {toHour} in the morning");
+                        currentTimePhrasesOneOf.Add($"about {toHour} in the morn");
+
+                        currentTimePhrasesOneOf.Add($"about {toHourWord} o’clock in the morning");
+                        currentTimePhrasesOneOf.Add($"about {toHourWord} o’clock in the morn");
+                        currentTimePhrasesOneOf.Add($"about {toHour} o’clock in the morning");
+                        currentTimePhrasesOneOf.Add($"about {toHour} o’clock in the morn");
+
+                        currentTimePhrasesOneOf.Add($"about {toHourWord} o'clock in the morning");
+                        currentTimePhrasesOneOf.Add($"about {toHourWord} o'clock in the morn");
+                        currentTimePhrasesOneOf.Add($"about {toHour} o'clock in the morning");
+                        currentTimePhrasesOneOf.Add($"about {toHour} o'clock in the morn");
+                        break;
+                }
             }
 
             if (startOfDay is { Hour: < 12, Minute: 0 })
@@ -522,34 +658,105 @@ public static class Phrases
             }
 
             // PM
-            if (startOfDay is { Hour: >= 12, Minute: > 0 and < 4 })
-            {
-                var hour = startOfDay.Hour;
-                var hourWord = NumberToWord[hour];
-
-                currentTimePhrasesOneOf.Add($"about {hourWord} at night");
-                currentTimePhrasesOneOf.Add($"about {hourWord} at night");
-            }
-
-            if (startOfDay is { Hour: >= 12, Minute: >= 56 and < 60 })
-            {
-                var toHour = startOfDay.Hour - 12 + 1;
-                var toHourWord = NumberToWord[toHour];
-
-                currentTimePhrasesOneOf.Add($"almost at {toHourWord} in the afternoon");
-                currentTimePhrasesOneOf.Add($"almost at {toHour} in the afternoon");
-            }
-
-            if (startOfDay is { Hour: >= 12, Minute: 30 })
+            if (startOfDay is { Hour: >= 12 and <= 23, Minute: > 0 })
             {
                 var hour = startOfDay.Hour == 12 ? startOfDay.Hour : startOfDay.Hour - 12;
                 var hourWord = NumberToWord[hour];
 
-                currentTimePhrasesOneOf.Add($"half past {hourWord} in the afternoon");
-                currentTimePhrasesOneOf.Add($"half past {hour} in the afternoon");
+                var toHour = hour + 1;
+                var toHourWord = NumberToWord[toHour];
+
+                switch (startOfDay.Minute)
+                {
+                    case < 4:
+                        currentTimePhrasesOneOf.Add($"a little after {hourWord} at night");
+                        currentTimePhrasesOneOf.Add($"a little after {hour} at night");
+                        currentTimePhrasesOneOf.Add($"a little after {hourWord} in the evening");
+                        currentTimePhrasesOneOf.Add($"a little after {hour} in the evening");
+
+                        currentTimePhrasesOneOf.Add($"just after {hourWord} at night");
+                        currentTimePhrasesOneOf.Add($"just after {hour} at night");
+                        currentTimePhrasesOneOf.Add($"just after {hourWord} in the evening");
+                        currentTimePhrasesOneOf.Add($"just after {hour} in the evening");
+
+                        currentTimePhrasesOneOf.Add($"about {hourWord} at night");
+                        currentTimePhrasesOneOf.Add($"about {hour} at night");
+                        currentTimePhrasesOneOf.Add($"about {hourWord} in the evening");
+                        currentTimePhrasesOneOf.Add($"about {hour} in the evening");
+
+                        currentTimePhrasesOneOf.Add($"about {hourWord} o’clock in the afternoon");
+                        currentTimePhrasesOneOf.Add($"about {hourWord} o'clock in the afternoon");
+                        currentTimePhrasesOneOf.Add($"about {hour} o’clock in the afternoon");
+                        currentTimePhrasesOneOf.Add($"about {hour} o'clock in the afternoon");
+
+                        currentTimePhrasesOneOf.Add($"about {hourWord} o’clock in the evening");
+                        currentTimePhrasesOneOf.Add($"about {hourWord} o'clock in the evening");
+                        currentTimePhrasesOneOf.Add($"about {hour} o’clock in the evening");
+                        currentTimePhrasesOneOf.Add($"about {hour} o'clock in the evening");
+                        break;
+                    case 15:
+                        currentTimePhrasesOneOf.Add($"quarter past {hourWord} in the afternoon");
+                        currentTimePhrasesOneOf.Add($"quarter-past {hourWord} in the afternoon");
+                        currentTimePhrasesOneOf.Add($"quarter past {hour} in the afternoon");
+                        currentTimePhrasesOneOf.Add($"quarter-past {hour} in the afternoon");
+                        currentTimePhrasesOneOf.Add($"quarter past {hourWord} in the evening");
+                        currentTimePhrasesOneOf.Add($"quarter-past {hourWord} in the evening");
+                        currentTimePhrasesOneOf.Add($"quarter past {hour} in the evening");
+                        currentTimePhrasesOneOf.Add($"quarter-past {hour} in the evening");
+                        break;
+                    case 30:
+                        currentTimePhrasesOneOf.Add($"half past {hourWord} in the afternoon");
+                        currentTimePhrasesOneOf.Add($"half-past {hourWord} in the afternoon");
+                        currentTimePhrasesOneOf.Add($"half past {hour} in the afternoon");
+                        currentTimePhrasesOneOf.Add($"half-past {hour} in the afternoon");
+
+                        currentTimePhrasesOneOf.Add($"half past {hourWord} in the evening");
+                        currentTimePhrasesOneOf.Add($"half-past {hourWord} in the evening");
+                        currentTimePhrasesOneOf.Add($"half past {hour} in the evening");
+                        currentTimePhrasesOneOf.Add($"half-past {hour} in the evening");
+                        break;
+                    case 45:
+                        currentTimePhrasesOneOf.Add($"quarter to {toHourWord} in the afternoon");
+                        currentTimePhrasesOneOf.Add($"quarter to {toHour} in the afternoon");
+                        currentTimePhrasesOneOf.Add($"quarter-to {toHourWord} in the afternoon");
+                        currentTimePhrasesOneOf.Add($"quarter-to {toHour} in the afternoon");
+
+                        currentTimePhrasesOneOf.Add($"quarter to {toHourWord} in the evening");
+                        currentTimePhrasesOneOf.Add($"quarter to {toHour} in the evening");
+                        currentTimePhrasesOneOf.Add($"quarter-to {toHourWord} in the evening");
+                        currentTimePhrasesOneOf.Add($"quarter-to {toHour} in the evening");
+                        break;
+                    case >= 57
+                    and < 60:
+                        currentTimePhrasesOneOf.Add($"almost at {toHourWord} in the afternoon");
+                        currentTimePhrasesOneOf.Add($"almost at {toHour} in the afternoon");
+                        currentTimePhrasesOneOf.Add($"almost at {toHourWord} in the evening");
+                        currentTimePhrasesOneOf.Add($"almost at {toHour} in the evening");
+
+                        currentTimePhrasesOneOf.Add($"nearly {toHourWord} in the afternoon");
+                        currentTimePhrasesOneOf.Add($"nearly {toHour} in the afternoon");
+                        currentTimePhrasesOneOf.Add($"nearly {toHourWord} in the evening");
+                        currentTimePhrasesOneOf.Add($"nearly {toHour} in the evening");
+
+                        currentTimePhrasesOneOf.Add($"about {toHourWord} in the afternoon");
+                        currentTimePhrasesOneOf.Add($"about {toHour} in the afternoon");
+                        currentTimePhrasesOneOf.Add($"about {toHourWord} in the evening");
+                        currentTimePhrasesOneOf.Add($"about {toHour} in the evening");
+
+                        currentTimePhrasesOneOf.Add($"about {toHourWord} o’clock in the afternoon");
+                        currentTimePhrasesOneOf.Add($"about {toHourWord} o'clock in the afternoon");
+                        currentTimePhrasesOneOf.Add($"about {toHour} o’clock in the afternoon");
+                        currentTimePhrasesOneOf.Add($"about {toHour} o'clock in the afternoon");
+
+                        currentTimePhrasesOneOf.Add($"about {toHourWord} o’clock in the evening");
+                        currentTimePhrasesOneOf.Add($"about {toHourWord} o'clock in the evening");
+                        currentTimePhrasesOneOf.Add($"about {toHour} o’clock in the evening");
+                        currentTimePhrasesOneOf.Add($"about {toHour} o'clock in the evening");
+                        break;
+                }
             }
 
-            if (startOfDay is { Hour: >= 12, Minute: 0 })
+            if (startOfDay is { Hour: >= 12 and <= 23, Minute: 0 })
             {
                 var hour = startOfDay.Hour == 12 ? startOfDay.Hour : startOfDay.Hour - 12;
                 var hourWord = NumberToWord[hour];
@@ -558,25 +765,15 @@ public static class Phrases
                 currentTimePhrasesOneOf.Add($"{hourWord} o'clock in the afternoon");
                 currentTimePhrasesOneOf.Add($"{hour} o’clock in the afternoon");
                 currentTimePhrasesOneOf.Add($"{hour} o'clock in the afternoon");
-
                 currentTimePhrasesOneOf.Add($"{hourWord} in the afternoon");
                 currentTimePhrasesOneOf.Add($"{hour} in the afternoon");
-            }
 
-            // Midnight
-            if (startOfDay.Hour == 0)
-            {
-                switch (startOfDay.Minute)
-                {
-                    case 0:
-                        currentTimePhrasesOneOf.Add("At midnight");
-                        currentTimePhrasesOneOf.Add("It struck midnight");
-                        break;
-                    case < 4:
-                        currentTimePhrasesOneOf.Add("just after midnight");
-                        currentTimePhrasesOneOf.Add("a little after midnight");
-                        break;
-                }
+                currentTimePhrasesOneOf.Add($"{hourWord} o’clock in the evening");
+                currentTimePhrasesOneOf.Add($"{hourWord} o'clock in the evening");
+                currentTimePhrasesOneOf.Add($"{hour} o’clock in the evening");
+                currentTimePhrasesOneOf.Add($"{hour} o'clock in the evening");
+                currentTimePhrasesOneOf.Add($"{hourWord} in the evening");
+                currentTimePhrasesOneOf.Add($"{hour} in the evening");
             }
 
             // Midnight
@@ -598,6 +795,11 @@ public static class Phrases
 
                 switch (startOfDay.Minute)
                 {
+                    case < 4:
+                        currentTimePhrasesOneOf.Add("a little after midnight");
+                        currentTimePhrasesOneOf.Add("just after midnight");
+                        currentTimePhrasesOneOf.Add("about midnight");
+                        break;
                     case 15:
                         currentTimePhrasesOneOf.Add("quarter past midnight");
                         currentTimePhrasesOneOf.Add("quarter-past midnight");
@@ -611,38 +813,46 @@ public static class Phrases
                 }
             }
 
+            if (startOfDay is { Hour: 0, Minute: 0 })
+            {
+                currentTimePhrasesOneOf.Add("At midnight");
+                currentTimePhrasesOneOf.Add("It struck midnight");
+            }
+
             // Midnight
             if (startOfDay is { Hour: 23, Minute: > 0 })
             {
                 var toMinute = 60 - startOfDay.Minute;
                 var toMinuteWord = NumberToWord[toMinute];
 
-                // twelve minute(s) to nineteen
                 currentTimePhrasesOneOf.Add($"{toMinuteWord} {toMinutePlural} to midnight");
 
                 switch (startOfDay.Minute)
                 {
                     case 45:
                         currentTimePhrasesOneOf.Add("quarter to midnight");
+                        currentTimePhrasesOneOf.Add("quarter-to midnight");
                         break;
-                    case >= 56
+                    case >= 57
                     and < 60:
+                        currentTimePhrasesOneOf.Add($"almost at midnight");
                         currentTimePhrasesOneOf.Add($"nearly midnight");
-                        currentTimePhrasesOneOf.Add($"nearly midnight");
+                        currentTimePhrasesOneOf.Add($"about midnight");
                         break;
                 }
             }
 
-            currentTimePhrasesGenericOneOf.Add($"{startOfDay:HH:mm}h");
-            currentTimePhrasesGenericOneOf.Add($"{startOfDay:HH:mm}");
+            currentTimePhrasesSuperGenericOneOf.Add($"{startOfDay:HH:mm}h");
+            currentTimePhrasesSuperGenericOneOf.Add($"{startOfDay:HH:mm}");
 
             var key = startOfDay.ToString("HH:mm");
             timePhrasesOneOf.TryAdd(key, currentTimePhrasesOneOf);
             timePhrasesGenericOneOf.TryAdd(key, currentTimePhrasesGenericOneOf);
+            timePhrasesSuperGenericOneOf.TryAdd(key, currentTimePhrasesSuperGenericOneOf);
 
             startOfDay = startOfDay.AddMinutes(1);
         }
 
-        return (timePhrasesOneOf, timePhrasesGenericOneOf);
+        return (timePhrasesOneOf, timePhrasesGenericOneOf, timePhrasesSuperGenericOneOf);
     }
 }

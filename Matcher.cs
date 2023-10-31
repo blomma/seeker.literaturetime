@@ -5,13 +5,14 @@ namespace Seeker;
 
 public static class Matcher
 {
-    public static List<string> FindMatches(
+    public static Dictionary<string, string> FindMatches(
         Dictionary<string, List<string>> timePhrasesOneOf,
         Dictionary<string, List<string>> timePhrasesGenericOneOf,
+        Dictionary<string, List<string>> timePhrasesSuperGenericOneOf,
         string line
     )
     {
-        var matches = new List<string>();
+        var matches = new Dictionary<string, string>();
         foreach (var timePhraseOneOf in timePhrasesOneOf)
         {
             foreach (var phrase in timePhraseOneOf.Value)
@@ -22,22 +23,7 @@ public static class Matcher
                     continue;
                 }
 
-                // The match is not at the start of the line, so we check that
-                // the character before it is a whitespace
-                if (startIndex > 0 && line[startIndex - 1] != ' ')
-                {
-                    continue;
-                }
-
-                // The match is not the last thing on the line, so we check that
-                // the character after it is a whitespace
-                var lastIndex = startIndex + phrase.Length - 1;
-                if (lastIndex < (line.Length - 1) && line[lastIndex + 1] != ' ')
-                {
-                    continue;
-                }
-
-                matches.Add($"{timePhraseOneOf.Key}|{phrase}");
+                matches.Add(timePhraseOneOf.Key, phrase);
                 break;
             }
         }
@@ -57,22 +43,37 @@ public static class Matcher
                     continue;
                 }
 
+                matches.Add(timePhraseOneOf.Key, phrase);
+                break;
+            }
+        }
+
+        foreach (var timePhraseOneOf in timePhrasesSuperGenericOneOf)
+        {
+            foreach (var phrase in timePhraseOneOf.Value)
+            {
+                var startIndex = line.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
+                if (startIndex == -1)
+                {
+                    continue;
+                }
+
                 // The match is not at the start of the line, so we check that
-                // the character before it is a whitespace
-                if (startIndex > 0 && line[startIndex - 1] != ' ')
+                // the character before it is not a :
+                if (startIndex > 0 && line[startIndex - 1] == ':')
                 {
                     continue;
                 }
 
                 // The match is not the last thing on the line, so we check that
                 // the character after it is a whitespace
-                var lastIndex = startIndex + phrase.Length - 1;
-                if (lastIndex < (line.Length - 1) && line[lastIndex + 1] != ' ')
-                {
-                    continue;
-                }
+                // var lastIndex = startIndex + phrase.Length - 1;
+                // if (lastIndex < (line.Length - 1) && line[lastIndex + 1] != ' ')
+                // {
+                //     continue;
+                // }
 
-                matches.Add($"{timePhraseOneOf.Key}|{phrase}");
+                matches.Add(timePhraseOneOf.Key, phrase);
                 break;
             }
         }
@@ -81,7 +82,7 @@ public static class Matcher
     }
 
     public static List<LiteratureTime> GenerateQuotesFromMatches(
-        ConcurrentDictionary<int, List<string>> matches,
+        ConcurrentDictionary<int, Dictionary<string, string>> matches,
         string[] lines,
         string title,
         string author,
@@ -110,7 +111,6 @@ public static class Matcher
                 var beforeLines = new List<string>();
                 var currentIndex = index;
 
-                // var noOfDotsTobeFound = new Random().Next(1, 3);
                 var noOfDotsTobeFound = 2;
 
                 // Search backwards... sort of for Uppercase
@@ -125,7 +125,7 @@ public static class Matcher
                     if (string.IsNullOrEmpty(currentLine))
                     {
                         emptyLines += 1;
-                        if (emptyLines > 1)
+                        if (emptyLines > 0)
                         {
                             break;
                         }
@@ -142,13 +142,12 @@ public static class Matcher
                         var p = currentLine[dotIndex - 1].ToString().ToLowerInvariant();
                         var pp = currentLine[dotIndex - 2].ToString().ToLowerInvariant();
 
-                        switch (p)
+                        patternFound = p switch
                         {
-                            case "m" when pp == ".":
-                            case "d" when pp == "n":
-                                patternFound = true;
-                                break;
-                        }
+                            "m" when pp == "." => true,
+                            "d" when pp == "n" => true,
+                            _ => patternFound
+                        };
                     }
 
                     if (patternFound)
@@ -228,7 +227,7 @@ public static class Matcher
                     if (string.IsNullOrEmpty(currentLine))
                     {
                         emptyLines += 1;
-                        if (emptyLines > 1)
+                        if (emptyLines > 0)
                         {
                             break;
                         }
@@ -258,12 +257,11 @@ public static class Matcher
                         var p = currentLine[dotIndex - 1].ToString().ToLowerInvariant();
                         var pp = currentLine[dotIndex - 2].ToString().ToLowerInvariant();
 
-                        switch (p)
+                        patternFound = p switch
                         {
-                            case "m" when pp == ".":
-                                patternFound = true;
-                                break;
-                        }
+                            "m" when pp == "." => true,
+                            _ => patternFound
+                        };
                     }
 
                     if (patternFound)
@@ -309,10 +307,9 @@ public static class Matcher
 
             foreach (var m in value)
             {
-                var matchValues = m.Split("|");
                 var literatureTime = new LiteratureTime(
-                    matchValues.First(),
-                    matchValues.Last(),
+                    m.Key,
+                    m.Value,
                     result,
                     title,
                     author,
