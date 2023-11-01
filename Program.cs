@@ -33,6 +33,15 @@ File.WriteAllText(
     timePhrasesGenericOneOfJson
 );
 
+var timePhrasesSuperGenericOneOfJson = JsonSerializer.Serialize(
+    timePhrasesSuperGenericOneOf,
+    jsonSerializerOptions
+);
+File.WriteAllText(
+    "/Users/blomma/Downloads/data/timePhrasesSuperGenericOneOf.json",
+    timePhrasesSuperGenericOneOfJson
+);
+
 var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 1 };
 
 var titlesExclusion = new List<string>
@@ -54,7 +63,8 @@ var titlesExclusion = new List<string>
     "Weymouth New Testament in Modern Speech, Preface and Introductions",
     "An Explanation of Luther's Small Catechism",
     "The Confutatio Pontificia",
-    "The Great Doctrines of the Bible"
+    "The Great Doctrines of the Bible",
+    "A Treatise on Good Works"
 };
 
 var authorExclusion = new List<string>
@@ -67,7 +77,8 @@ var authorExclusion = new List<string>
     "Rev. William Evans",
     "Henry F. Lutz",
     "E. B. Stewart",
-    "Henry T. Sell"
+    "Henry T. Sell",
+    "Benedict of Spinoza"
 };
 
 List<LiteratureTime> literatureTimes = new();
