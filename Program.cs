@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using Seeker;
@@ -64,7 +65,8 @@ var titlesExclusion = new List<string>
     "An Explanation of Luther's Small Catechism",
     "The Confutatio Pontificia",
     "The Great Doctrines of the Bible",
-    "A Treatise on Good Works"
+    "A Treatise on Good Works",
+    "The American Woman's Home"
 };
 
 var authorExclusion = new List<string>
@@ -78,8 +80,11 @@ var authorExclusion = new List<string>
     "Henry F. Lutz",
     "E. B. Stewart",
     "Henry T. Sell",
-    "Benedict of Spinoza"
+    "Benedict of Spinoza",
+    "Alexander von Humboldt"
 };
+
+// return;
 
 List<LiteratureTime> literatureTimes = new();
 
@@ -125,13 +130,16 @@ foreach (var file in files)
     // else fallback to default
     var utf8File = Path.Combine(filePath!, $"{fileDirectory}-0.txt");
     var iso8859_1 = Path.Combine(filePath!, $"{fileDirectory}-8.txt");
+    Encoding encoding = Encoding.ASCII;
     if (File.Exists(utf8File))
     {
         fileToRead = utf8File;
+        encoding = Encoding.UTF8;
     }
     else if (File.Exists(iso8859_1))
     {
         fileToRead = iso8859_1;
+        encoding = Encoding.Latin1;
     }
 
     if (!File.Exists(fileToRead))
@@ -142,7 +150,7 @@ foreach (var file in files)
 
     Console.WriteLine($"{fileToRead} - {processedFiles}:{totalFiles}");
 
-    var lines = File.ReadAllLines(fileToRead);
+    var lines = File.ReadAllLines(fileToRead, encoding);
     var title = "";
     var author = "";
     var language = "";

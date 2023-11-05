@@ -67,11 +67,11 @@ public static class Matcher
 
                 // The match is not the last thing on the line, so we check that
                 // the character after it is a whitespace
-                // var lastIndex = startIndex + phrase.Length - 1;
-                // if (lastIndex < (line.Length - 1) && line[lastIndex + 1] != ' ')
-                // {
-                //     continue;
-                // }
+                var lastIndex = startIndex + phrase.Length - 1;
+                if (lastIndex < (line.Length - 1) && line[lastIndex + 1] != ' ')
+                {
+                    continue;
+                }
 
                 matches.Add(timePhraseOneOf.Key, phrase);
                 break;
