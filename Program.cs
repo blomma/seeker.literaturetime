@@ -86,13 +86,13 @@ var authorExclusion = new List<string>
 
 // return;
 
-List<LiteratureTime> literatureTimes = new();
+List<LiteratureTime> literatureTimes =  [ ];
 
-List<string> fileDirectoryDone = new();
+List<string> fileDirectoryDone =  [ ];
 if (File.Exists("/Users/blomma/Downloads/data/fileDirectoryDone.json"))
 {
     var content = File.ReadAllText("/Users/blomma/Downloads/data/fileDirectoryDone.json");
-    fileDirectoryDone = JsonSerializer.Deserialize<List<string>>(content) ?? new();
+    fileDirectoryDone = JsonSerializer.Deserialize<List<string>>(content) ?? [ ];
 }
 
 var totalFiles = files.Count();
@@ -291,6 +291,10 @@ foreach (var file in files)
     var fileDirectoryDoneJson = JsonSerializer.Serialize(fileDirectoryDone, jsonSerializerOptions);
     File.WriteAllText("/Users/blomma/Downloads/data/fileDirectoryDone.json", fileDirectoryDoneJson);
 
+    // if (processedFiles > 6927)
+    // {
+    //     break;
+    // }
     // if (literatureTimes.Count > 200)
     // {
     //     break;
