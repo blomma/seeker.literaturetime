@@ -492,10 +492,28 @@ public static class Phrases
                 var toHour = startOfDay.Hour > 12 ? startOfDay.Hour - 12 + 1 : startOfDay.Hour + 1;
                 var toHourWord = NumberToWord[toHour];
 
+                var minute = startOfDay.Minute;
+                var minuteWord = NumberToWord[minute];
+
                 var toMinute = 60 - startOfDay.Minute;
                 var toMinuteWord = NumberToWord[toMinute];
 
-                // twelve minute(s) to nineteen
+                currentTimePhrasesGenericOneOf.Add(
+                    $"{minuteWord} {pastMinutePlural} past {hourWord}"
+                );
+                currentTimePhrasesGenericOneOf.Add($"{minute} {pastMinutePlural} past {hour}");
+
+                currentTimePhrasesGenericOneOf.Add(
+                    $"{minuteWord} {pastMinutePlural} after {hourWord}"
+                );
+                currentTimePhrasesGenericOneOf.Add($"{minute} {pastMinutePlural} after {hour}");
+
+                // currentTimePhrasesGenericOneOf.Add($"{minuteWord} past {hourWord}");
+                // currentTimePhrasesGenericOneOf.Add($"{minute} past {hour}");
+
+                // currentTimePhrasesGenericOneOf.Add($"{minuteWord} after {hourWord}");
+                // currentTimePhrasesGenericOneOf.Add($"{minute} after {hour}");
+
                 currentTimePhrasesGenericOneOf.Add(
                     $"{toMinuteWord} {toMinutePlural} to {toHourWord}"
                 );

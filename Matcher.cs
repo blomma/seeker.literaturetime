@@ -3,9 +3,11 @@ using System.Text;
 
 namespace Seeker;
 
+public record Match(int MatchType, Dictionary<string, string> Matches);
+
 public static class Matcher
 {
-    public static Dictionary<string, string> FindMatches(
+    public static Match FindMatches(
         Dictionary<string, List<string>> timePhrasesOneOf,
         Dictionary<string, List<string>> timePhrasesGenericOneOf,
         Dictionary<string, List<string>> timePhrasesSuperGenericOneOf,
@@ -30,7 +32,7 @@ public static class Matcher
 
         if (matches.Count > 0)
         {
-            return matches;
+            return new Match(0, matches);
         }
 
         foreach (var timePhraseOneOf in timePhrasesGenericOneOf)
@@ -46,6 +48,11 @@ public static class Matcher
                 matches.Add(timePhraseOneOf.Key, phrase);
                 break;
             }
+        }
+
+        if (matches.Count > 0)
+        {
+            return new Match(1, matches);
         }
 
         foreach (var timePhraseOneOf in timePhrasesSuperGenericOneOf)
@@ -78,11 +85,11 @@ public static class Matcher
             }
         }
 
-        return matches;
+        return new Match(2, matches);
     }
 
     public static List<LiteratureTime> GenerateQuotesFromMatches(
-        ConcurrentDictionary<int, Dictionary<string, string>> matches,
+        ConcurrentDictionary<int, Match> matches,
         string[] lines,
         string title,
         string author,
@@ -305,7 +312,7 @@ public static class Matcher
             var result = quoteString.ToString();
             result = result.Trim();
 
-            foreach (var m in value)
+            foreach (var m in value.Matches)
             {
                 var literatureTime = new LiteratureTime(
                     m.Key,
@@ -313,7 +320,8 @@ public static class Matcher
                     result,
                     title,
                     author,
-                    gutenbergReference
+                    gutenbergReference,
+                    value.MatchType
                 );
 
                 literatureTimes.Add(literatureTime);

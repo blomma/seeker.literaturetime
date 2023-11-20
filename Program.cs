@@ -15,6 +15,7 @@ Directory.CreateDirectory("/Users/blomma/Downloads/data/");
 
 // string gutPath = "./test/";
 
+
 var gutPath = "/Users/blomma/Downloads/gutenberg";
 
 // var gutPath = "/Users/blomma/Downloads/test";
@@ -89,9 +90,14 @@ var authorExclusion = new List<string>
 List<LiteratureTime> literatureTimes =  [ ];
 
 List<string> fileDirectoryDone =  [ ];
+
+var fileDirectoryDoneDate = DateTime.UnixEpoch;
 if (File.Exists("/Users/blomma/Downloads/data/fileDirectoryDone.json"))
 {
     var content = File.ReadAllText("/Users/blomma/Downloads/data/fileDirectoryDone.json");
+    fileDirectoryDoneDate = File.GetLastWriteTimeUtc(
+        "/Users/blomma/Downloads/data/fileDirectoryDone.json"
+    );
     fileDirectoryDone = JsonSerializer.Deserialize<List<string>>(content) ?? [ ];
 }
 
@@ -117,12 +123,6 @@ foreach (var file in files)
         continue;
     }
 
-    if (fileDirectoryDone.Contains(fileDirectory))
-    {
-        Console.WriteLine($"Skipping (directory done) {file} - {processedFiles}:{totalFiles}");
-        continue;
-    }
-
     var fileToRead = Path.Combine(filePath!, $"{fileDirectory}.txt");
 
     // Prefer utf-8, files that end in -0
@@ -145,6 +145,13 @@ foreach (var file in files)
     if (!File.Exists(fileToRead))
     {
         Console.WriteLine($"Skipping (wrong format) {file} - {processedFiles}:{totalFiles}");
+        continue;
+    }
+
+    var fileToReadDate = File.GetLastWriteTimeUtc(fileToRead);
+    if (fileDirectoryDone.Contains(fileDirectory) && fileToReadDate < fileDirectoryDoneDate)
+    {
+        Console.WriteLine($"Skipping (directory done) {file} - {processedFiles}:{totalFiles}");
         continue;
     }
 
@@ -237,7 +244,7 @@ foreach (var file in files)
         }
     }
 
-    var matches = new ConcurrentDictionary<int, Dictionary<string, string>>();
+    var matches = new ConcurrentDictionary<int, Match>();
 
     if (startIndex != -1)
     {
@@ -254,7 +261,7 @@ foreach (var file in files)
                     timePhrasesSuperGenericOneOf,
                     line
                 );
-                if (result.Count > 0)
+                if (result.Matches.Count > 0)
                 {
                     matches.TryAdd(index, result);
                 }
@@ -291,13 +298,14 @@ foreach (var file in files)
     var fileDirectoryDoneJson = JsonSerializer.Serialize(fileDirectoryDone, jsonSerializerOptions);
     File.WriteAllText("/Users/blomma/Downloads/data/fileDirectoryDone.json", fileDirectoryDoneJson);
 
-    // if (processedFiles > 6927)
+    // if (processedFiles > 20)
     // {
     //     break;
     // }
-    // if (literatureTimes.Count > 200)
+
+    // if (literatureTimes.Count > 2)
     // {
-    //     break;
+    //      break;
     // }
 }
 
@@ -311,5 +319,6 @@ public record LiteratureTime(
     string Quote,
     string Title,
     string Author,
-    string GutenbergReference
+    string GutenbergReference,
+    int MatchType
 );
