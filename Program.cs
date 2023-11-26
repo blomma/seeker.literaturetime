@@ -11,36 +11,33 @@ var jsonSerializerOptions = new JsonSerializerOptions
     Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
 };
 
-Directory.CreateDirectory("/Users/blomma/Downloads/data/");
+const string outputDirectory = "/Users/blomma/Downloads/data";
+const string gutPath = "/Users/blomma/Downloads/gutenberg";
 
-// string gutPath = "./test/";
+Directory.CreateDirectory(outputDirectory);
 
+// const string gutPath = "./test/";
+// const string gutPath = "/Users/blomma/Downloads/test";
 
-var gutPath = "/Users/blomma/Downloads/gutenberg";
-
-// var gutPath = "/Users/blomma/Downloads/test";
 var files = Directory.EnumerateFiles(gutPath, "*.txt", SearchOption.AllDirectories);
 var (timePhrasesOneOf, timePhrasesGenericOneOf, timePhrasesSuperGenericOneOf) =
     Phrases.GeneratePhrases();
 
 var timePhrasesOneOfJson = JsonSerializer.Serialize(timePhrasesOneOf, jsonSerializerOptions);
-File.WriteAllText("/Users/blomma/Downloads/data/timePhrasesOneOf.json", timePhrasesOneOfJson);
+File.WriteAllText($"{outputDirectory}/timePhrasesOneOf.json", timePhrasesOneOfJson);
 
 var timePhrasesGenericOneOfJson = JsonSerializer.Serialize(
     timePhrasesGenericOneOf,
     jsonSerializerOptions
 );
-File.WriteAllText(
-    "/Users/blomma/Downloads/data/timePhrasesGenericOneOf.json",
-    timePhrasesGenericOneOfJson
-);
+File.WriteAllText($"{outputDirectory}/timePhrasesGenericOneOf.json", timePhrasesGenericOneOfJson);
 
 var timePhrasesSuperGenericOneOfJson = JsonSerializer.Serialize(
     timePhrasesSuperGenericOneOf,
     jsonSerializerOptions
 );
 File.WriteAllText(
-    "/Users/blomma/Downloads/data/timePhrasesSuperGenericOneOf.json",
+    $"{outputDirectory}/timePhrasesSuperGenericOneOf.json",
     timePhrasesSuperGenericOneOfJson
 );
 
@@ -85,19 +82,15 @@ var authorExclusion = new List<string>
     "Alexander von Humboldt"
 };
 
-// return;
-
 List<LiteratureTime> literatureTimes =  [ ];
 
 List<string> fileDirectoryDone =  [ ];
 
 var fileDirectoryDoneDate = DateTime.UnixEpoch;
-if (File.Exists("/Users/blomma/Downloads/data/fileDirectoryDone.json"))
+if (File.Exists($"{outputDirectory}/fileDirectoryDone.json"))
 {
-    var content = File.ReadAllText("/Users/blomma/Downloads/data/fileDirectoryDone.json");
-    fileDirectoryDoneDate = File.GetLastWriteTimeUtc(
-        "/Users/blomma/Downloads/data/fileDirectoryDone.json"
-    );
+    var content = File.ReadAllText($"{outputDirectory}/fileDirectoryDone.json");
+    fileDirectoryDoneDate = File.GetLastWriteTimeUtc($"{outputDirectory}/fileDirectoryDone.json");
     fileDirectoryDone = JsonSerializer.Deserialize<List<string>>(content) ?? [ ];
 }
 
@@ -149,7 +142,7 @@ foreach (var file in files)
     }
 
     var fileToReadDate = File.GetLastWriteTimeUtc(fileToRead);
-    if (fileDirectoryDone.Contains(fileDirectory) && fileToReadDate < fileDirectoryDoneDate)
+    if (fileDirectoryDone.Contains(fileDirectory)) // && fileToReadDate < fileDirectoryDoneDate)
     {
         Console.WriteLine($"Skipping (directory done) {file} - {processedFiles}:{totalFiles}");
         continue;
@@ -287,8 +280,7 @@ foreach (var file in files)
             jsonSerializerOptions
         );
 
-        var directory =
-            $"/Users/blomma/Downloads/data/{literatureTimesIndexGroup.Key.Replace(":", "_")}";
+        var directory = $"{outputDirectory}/{literatureTimesIndexGroup.Key.Replace(":", "_")}";
         Directory.CreateDirectory(directory);
 
         File.WriteAllText($"{directory}/{fileDirectory}.json", jsonString);
@@ -296,7 +288,7 @@ foreach (var file in files)
 
     fileDirectoryDone.Add(fileDirectory);
     var fileDirectoryDoneJson = JsonSerializer.Serialize(fileDirectoryDone, jsonSerializerOptions);
-    File.WriteAllText("/Users/blomma/Downloads/data/fileDirectoryDone.json", fileDirectoryDoneJson);
+    File.WriteAllText($"{outputDirectory}/fileDirectoryDone.json", fileDirectoryDoneJson);
 
     // if (processedFiles > 20)
     // {
