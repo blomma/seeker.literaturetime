@@ -229,7 +229,8 @@ foreach (var file in files)
 
         if (
             !string.IsNullOrEmpty(title)
-            && !string.IsNullOrEmpty(author) & !string.IsNullOrEmpty(language)
+            && !string.IsNullOrEmpty(author)
+            && !string.IsNullOrEmpty(language)
         )
         {
             startIndex = i;
