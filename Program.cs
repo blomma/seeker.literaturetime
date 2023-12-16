@@ -19,7 +19,7 @@ Directory.CreateDirectory(outputDirectory);
 // const string gutPath = "./test/";
 // const string gutPath = "/Users/blomma/Downloads/test";
 
-var files = Directory.EnumerateFiles(gutPath, "*.txt", SearchOption.AllDirectories);
+var files = (List<string>)Directory.EnumerateFiles(gutPath, "*.txt", SearchOption.AllDirectories);
 var (timePhrasesOneOf, timePhrasesGenericOneOf, timePhrasesSuperGenericOneOf) =
     Phrases.GeneratePhrases();
 
@@ -64,7 +64,8 @@ var titlesExclusion = new List<string>
     "The Confutatio Pontificia",
     "The Great Doctrines of the Bible",
     "A Treatise on Good Works",
-    "The American Woman's Home"
+    "The American Woman's Home",
+    "Works of Martin Luther"
 };
 
 var authorExclusion = new List<string>
@@ -79,22 +80,24 @@ var authorExclusion = new List<string>
     "E. B. Stewart",
     "Henry T. Sell",
     "Benedict of Spinoza",
-    "Alexander von Humboldt"
+    "Alexander von Humboldt",
+    "Augustus Hopkins Strong",
+    "Martin Luther"
 };
 
-List<LiteratureTime> literatureTimes =  [ ];
+List<LiteratureTime> literatureTimes = [];
 
-List<string> fileDirectoryDone =  [ ];
+List<string> fileDirectoryDone = [];
 
 var fileDirectoryDoneDate = DateTime.UnixEpoch;
 if (File.Exists($"{outputDirectory}/fileDirectoryDone.json"))
 {
     var content = File.ReadAllText($"{outputDirectory}/fileDirectoryDone.json");
     fileDirectoryDoneDate = File.GetLastWriteTimeUtc($"{outputDirectory}/fileDirectoryDone.json");
-    fileDirectoryDone = JsonSerializer.Deserialize<List<string>>(content) ?? [ ];
+    fileDirectoryDone = JsonSerializer.Deserialize<List<string>>(content) ?? [];
 }
 
-var totalFiles = files.Count();
+var totalFiles = files.Count;
 var processedFiles = 0;
 
 var watch = Stopwatch.StartNew();
@@ -305,13 +308,3 @@ foreach (var file in files)
 watch.Stop();
 
 Console.WriteLine($"Time Taken : {watch.ElapsedMilliseconds} ms.");
-
-public record LiteratureTime(
-    string Time,
-    string TimeQuote,
-    string Quote,
-    string Title,
-    string Author,
-    string GutenbergReference,
-    int MatchType
-);

@@ -19,8 +19,7 @@ public static class Matcher
         {
             foreach (var phrase in timePhraseOneOf.Value)
             {
-                var startIndex = line.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
-                if (startIndex == -1)
+                if (line.Contains(phrase, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
@@ -39,8 +38,7 @@ public static class Matcher
         {
             foreach (var phrase in timePhraseOneOf.Value)
             {
-                var startIndex = line.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
-                if (startIndex == -1)
+                if (line.Contains(phrase, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
