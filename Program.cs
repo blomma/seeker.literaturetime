@@ -1,5 +1,4 @@
 ﻿using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -16,10 +15,7 @@ const string gutPath = "/Users/blomma/Downloads/gutenberg";
 
 Directory.CreateDirectory(outputDirectory);
 
-// const string gutPath = "./test/";
-// const string gutPath = "/Users/blomma/Downloads/test";
-
-var files = (List<string>)Directory.EnumerateFiles(gutPath, "*.txt", SearchOption.AllDirectories);
+var files = Directory.EnumerateFiles(gutPath, "*.txt", SearchOption.AllDirectories).ToList();
 var (timePhrasesOneOf, timePhrasesGenericOneOf, timePhrasesSuperGenericOneOf) =
     Phrases.GeneratePhrases();
 
@@ -995,10 +991,11 @@ if (File.Exists($"{outputDirectory}/fileDirectoryDone.json"))
     fileDirectoryDone = JsonSerializer.Deserialize<List<string>>(content) ?? [];
 }
 
+Console.WriteLine(fileDirectoryDoneDate);
+
 var totalFiles = files.Count;
 var processedFiles = 0;
 
-var watch = Stopwatch.StartNew();
 foreach (var file in files)
 {
     processedFiles += 1;
@@ -1038,15 +1035,22 @@ foreach (var file in files)
 
     if (!File.Exists(fileToRead))
     {
-        Console.WriteLine($"Skipping (wrong format) {file} - {processedFiles}:{totalFiles}");
+        // Console.WriteLine($"Skipping (wrong format) {file} - {processedFiles}:{totalFiles}");
         continue;
     }
 
     var fileToReadDate = File.GetLastWriteTimeUtc(fileToRead);
-    if (fileDirectoryDone.Contains(fileDirectory)) // && fileToReadDate < fileDirectoryDoneDate)
+    if (fileDirectoryDone.Contains(fileDirectory))
     {
-        Console.WriteLine($"Skipping (directory done) {file} - {processedFiles}:{totalFiles}");
-        continue;
+        if (fileToReadDate >= fileDirectoryDoneDate)
+        {
+            Console.WriteLine($"Updating (modified) {file} - {processedFiles}:{totalFiles}");
+        }
+        else
+        {
+            // Console.WriteLine($"Skipping (directory done) {file} - {processedFiles}:{totalFiles}");
+            continue;
+        }
     }
 
     Console.WriteLine($"{fileToRead} - {processedFiles}:{totalFiles}");
@@ -1077,7 +1081,8 @@ foreach (var file in files)
 
         if (line.StartsWith("Language:", StringComparison.OrdinalIgnoreCase))
         {
-            language = line.Replace("Language:", "").Trim();
+            language = line.Replace("Language:", "", StringComparison.InvariantCultureIgnoreCase)
+                .Trim();
             if (string.IsNullOrEmpty(language))
             {
                 break;
@@ -1098,7 +1103,7 @@ foreach (var file in files)
 
         if (line.StartsWith("Title: ", StringComparison.OrdinalIgnoreCase))
         {
-            title = line.Replace("Title:", "").Trim();
+            title = line.Replace("Title:", "", StringComparison.InvariantCultureIgnoreCase).Trim();
             if (string.IsNullOrEmpty(title))
             {
                 break;
@@ -1114,7 +1119,8 @@ foreach (var file in files)
 
         if (line.StartsWith("Author: ", StringComparison.OrdinalIgnoreCase))
         {
-            author = line.Replace("Author:", "").Trim();
+            author = line.Replace("Author:", "", StringComparison.InvariantCultureIgnoreCase)
+                .Trim();
             if (string.IsNullOrEmpty(author))
             {
                 break;
@@ -1182,27 +1188,15 @@ foreach (var file in files)
             jsonSerializerOptions
         );
 
-        var directory = $"{outputDirectory}/{literatureTimesIndexGroup.Key.Replace(":", "_")}";
+        var directory =
+            $"{outputDirectory}/{literatureTimesIndexGroup.Key.Replace(":", "_", StringComparison.InvariantCultureIgnoreCase)}";
         Directory.CreateDirectory(directory);
 
         File.WriteAllText($"{directory}/{fileDirectory}.json", jsonString);
     }
 
     fileDirectoryDone.Add(fileDirectory);
-    var fileDirectoryDoneJson = JsonSerializer.Serialize(fileDirectoryDone, jsonSerializerOptions);
-    File.WriteAllText($"{outputDirectory}/fileDirectoryDone.json", fileDirectoryDoneJson);
-
-    // if (processedFiles > 20)
-    // {
-    //     break;
-    // }
-
-    // if (literatureTimes.Count > 2)
-    // {
-    //      break;
-    // }
 }
 
-watch.Stop();
-
-Console.WriteLine($"Time Taken : {watch.ElapsedMilliseconds} ms.");
+var fileDirectoryDoneJson = JsonSerializer.Serialize(fileDirectoryDone, jsonSerializerOptions);
+File.WriteAllText($"{outputDirectory}/fileDirectoryDone.json", fileDirectoryDoneJson);

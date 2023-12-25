@@ -19,7 +19,7 @@ public static class Matcher
         {
             foreach (var phrase in timePhraseOneOf.Value)
             {
-                if (line.Contains(phrase, StringComparison.OrdinalIgnoreCase))
+                if (!line.Contains(phrase, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
@@ -38,7 +38,7 @@ public static class Matcher
         {
             foreach (var phrase in timePhraseOneOf.Value)
             {
-                if (line.Contains(phrase, StringComparison.OrdinalIgnoreCase))
+                if (!line.Contains(phrase, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
@@ -86,7 +86,7 @@ public static class Matcher
         return new Match(2, matches);
     }
 
-    public static List<LiteratureTime> GenerateQuotesFromMatches(
+    public static IEnumerable<LiteratureTime> GenerateQuotesFromMatches(
         ConcurrentDictionary<int, Match> matches,
         string[] lines,
         string title,
