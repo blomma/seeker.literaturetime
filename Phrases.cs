@@ -82,6 +82,10 @@ public static class Phrases
     private static List<string> Pm =>
         ["pm", "p.m.", "p. m.", " pm", " p.m.", " p. m.", "  pm", "  p.m.", "  p. m."];
 
+    private static List<string> After => ["a little after ", "just after ", "about "];
+
+    private static List<string> AlmostAt => ["almost at ", "nearly ", "about "];
+
     private static List<string> Combine(
         List<string> listA,
         List<string> listB,
@@ -220,11 +224,7 @@ public static class Phrases
                 if (startOfDay.Minute < 4)
                 {
                     currentTimePhrasesOneOf.AddRange(
-                        Combine(
-                            ["a little after ", "just after ", "about "],
-                            [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
-                            Am
-                        )
+                        Combine(After, [hourWord, hour.ToString(CultureInfo.InvariantCulture)], Am)
                     );
                 }
             }
@@ -286,11 +286,7 @@ public static class Phrases
                 if (startOfDay.Minute < 4)
                 {
                     currentTimePhrasesOneOf.AddRange(
-                        Combine(
-                            ["a little after ", "just after ", "about "],
-                            [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
-                            Pm
-                        )
+                        Combine(After, [hourWord, hour.ToString(CultureInfo.InvariantCulture)], Pm)
                     );
                 }
             }
@@ -310,6 +306,7 @@ public static class Phrases
                 currentTimePhrasesOneOf.AddRange(
                     AppendAm($"{toMinuteWord} {toMinutePlural} to {toHourWord}")
                 );
+
                 currentTimePhrasesOneOf.AddRange(
                     AppendAm($"{toMinute} {toMinutePlural} to {toHour}")
                 );
@@ -319,7 +316,7 @@ public static class Phrases
                     case < 4:
                         currentTimePhrasesOneOf.AddRange(
                             Combine(
-                                ["a little after ", "just after ", "about "],
+                                After,
                                 [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
                                 [" o'clock", " o’clock"],
                                 Am
@@ -362,7 +359,7 @@ public static class Phrases
                     and < 60:
                         currentTimePhrasesOneOf.AddRange(
                             Combine(
-                                ["almost at ", "nearly ", "about "],
+                                AlmostAt,
                                 [toHourWord, toHour.ToString(CultureInfo.InvariantCulture)],
                                 [" o'clock", " o’clock"],
                                 Am
@@ -397,7 +394,7 @@ public static class Phrases
                     case < 4:
                         currentTimePhrasesOneOf.AddRange(
                             Combine(
-                                ["a little after ", "just after ", "about "],
+                                After,
                                 [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
                                 [" o'clock", " o’clock"],
                                 Pm
@@ -441,7 +438,7 @@ public static class Phrases
                     and < 60:
                         currentTimePhrasesOneOf.AddRange(
                             Combine(
-                                ["almost at ", "nearly ", "about "],
+                                AlmostAt,
                                 [toHourWord, toHour.ToString(CultureInfo.InvariantCulture)],
                                 [" o'clock", " o’clock"],
                                 Pm
@@ -492,7 +489,7 @@ public static class Phrases
                     case < 4:
                         currentTimePhrasesGenericOneOf.AddRange(
                             Combine(
-                                ["a little after ", "just after ", "about "],
+                                After,
                                 [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
                                 [" o'clock", " o’clock"]
                             )
@@ -531,7 +528,7 @@ public static class Phrases
                     and < 60:
                         currentTimePhrasesGenericOneOf.AddRange(
                             Combine(
-                                ["almost at ", "nearly ", "about "],
+                                AlmostAt,
                                 [toHourWord, toHour.ToString(CultureInfo.InvariantCulture)],
                                 [" o'clock", " o’clock"]
                             )
@@ -588,7 +585,7 @@ public static class Phrases
                     case < 4:
                         currentTimePhrasesOneOf.AddRange(
                             Combine(
-                                ["a little after ", "just after ", "about "],
+                                After,
                                 [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
                                 [
                                     " in the morning",
@@ -680,7 +677,7 @@ public static class Phrases
                     and < 60:
                         currentTimePhrasesOneOf.AddRange(
                             Combine(
-                                ["almost at ", "nearly ", "about "],
+                                AlmostAt,
                                 [toHourWord, toHour.ToString(CultureInfo.InvariantCulture)],
                                 [
                                     " in the morning",
@@ -742,7 +739,7 @@ public static class Phrases
                     case < 4:
                         currentTimePhrasesOneOf.AddRange(
                             Combine(
-                                ["a little after ", "just after ", "about "],
+                                After,
                                 [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
                                 [
                                     " in the afternoon",
@@ -855,7 +852,7 @@ public static class Phrases
                     and < 60:
                         currentTimePhrasesOneOf.AddRange(
                             Combine(
-                                ["almost at ", "nearly ", "about "],
+                                AlmostAt,
                                 [toHourWord, toHour.ToString(CultureInfo.InvariantCulture)],
                                 [
                                     " in the afternoon",
