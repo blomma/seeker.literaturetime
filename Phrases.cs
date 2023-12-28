@@ -70,59 +70,17 @@ public static class Phrases
             { 60, "sixty" },
         };
 
-    private static List<string> AppendAm(string timePhrase) =>
-        [
-            $"{timePhrase}am",
-            $"{timePhrase}a.m.",
-            $"{timePhrase} am",
-            $"{timePhrase} a.m.",
-            $"{timePhrase}  am",
-            $"{timePhrase}  a.m."
-        ];
+    private static IEnumerable<string> AppendAm(string timePhrase) =>
+        Am.Select(v => $"{timePhrase}{v}");
 
-    private static List<string> AppendPm(string timePhrase) =>
-        [
-            $"{timePhrase}pm",
-            $"{timePhrase}p.m.",
-            $"{timePhrase} pm",
-            $"{timePhrase} p.m.",
-            $"{timePhrase}  pm",
-            $"{timePhrase}  p.m."
-        ];
+    private static IEnumerable<string> AppendPm(string timePhrase) =>
+        Pm.Select(v => $"{timePhrase}{v}");
 
-    private static List<string> Am => ["am", "a.m.", " am", " a.m.", "  am", "  a.m."];
+    private static List<string> Am =>
+        ["am", "a.m.", "a. m.", " am", " a.m.", " a. m.", "  am", "  a.m.", "  a. m."];
 
-    private static List<string> Pm => ["pm", "p.m.", " pm", " p.m.", "  pm", "  p.m."];
-
-    private static List<string> Combine(
-        List<string> listA,
-        List<string> listB,
-        List<string> listC,
-        List<string> listD,
-        List<string> listE
-    )
-    {
-        List<string> result = [];
-        foreach (var a in listA)
-        {
-            foreach (var b in listB)
-            {
-                foreach (var c in listC)
-                {
-                    foreach (var d in listD)
-                    {
-                        foreach (var e in listE)
-                        {
-                            var r = $"{a}{b}{c}{d}{e}";
-                            result.Add(r);
-                        }
-                    }
-                }
-            }
-        }
-
-        return result;
-    }
+    private static List<string> Pm =>
+        ["pm", "p.m.", "p. m.", " pm", " p.m.", " p. m.", "  pm", "  p.m.", "  p. m."];
 
     private static List<string> Combine(
         List<string> listA,
@@ -224,7 +182,7 @@ public static class Phrases
                         break;
                 }
 
-                currentTimePhrasesOneOf.AddRange(AppendAm($"{startOfDay:h:mm}"));
+                currentTimePhrasesSuperGenericOneOf.AddRange(AppendAm($"{startOfDay:h:mm}"));
             }
 
             if (startOfDay is { Hour: < 12, Minute: > 0 })
@@ -290,7 +248,7 @@ public static class Phrases
                         break;
                 }
 
-                currentTimePhrasesOneOf.AddRange(AppendPm($"{startOfDay:h:mm}"));
+                currentTimePhrasesSuperGenericOneOf.AddRange(AppendPm($"{startOfDay:h:mm}"));
             }
 
             if (startOfDay is { Hour: >= 12 and <= 23, Minute: > 0 })

@@ -64,18 +64,44 @@ public static class Matcher
                 }
 
                 // The match is not at the start of the line, so we check that
-                // the character before it is not a :
-                if (startIndex > 0 && line[startIndex - 1] == ':')
+                if (startIndex > 0)
                 {
-                    continue;
+                    var beforeChar = line[startIndex - 1];
+
+                    // Phrase is 12:12
+                    // Sequence is matched on is 12:12:12
+                    if (beforeChar == ':')
+                    {
+                        continue;
+                    }
+
+                    // Phrase is 2:12
+                    // Sequence is matched on is 12:12
+                    if (char.IsNumber(beforeChar))
+                    {
+                        continue;
+                    }
                 }
 
                 // The match is not the last thing on the line, so we check that
-                // the character after it is a whitespace
                 var lastIndex = startIndex + phrase.Length - 1;
-                if (lastIndex < (line.Length - 1) && line[lastIndex + 1] != ' ')
+                if (lastIndex < (line.Length - 1))
                 {
-                    continue;
+                    var afterChar = line[lastIndex + 1];
+
+                    // Phrase is 12:12
+                    // Sequence is matched on is 12:12:12
+                    if (afterChar == ':')
+                    {
+                        continue;
+                    }
+
+                    // Phrase is 2:12
+                    // Sequence is matched on is 12:12
+                    if (char.IsNumber(afterChar))
+                    {
+                        continue;
+                    }
                 }
 
                 matches.Add(timePhraseOneOf.Key, phrase);
