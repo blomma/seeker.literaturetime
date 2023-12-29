@@ -983,8 +983,20 @@ public static class Phrases
             currentTimePhrasesSuperGenericOneOf.Add($"{startOfDay:HH:mm}");
 
             var key = startOfDay.ToString("HH:mm", CultureInfo.InvariantCulture);
+
+            currentTimePhrasesOneOf = [.. currentTimePhrasesOneOf.OrderBy(s => s.Length)];
             timePhrasesOneOf.TryAdd(key, currentTimePhrasesOneOf);
+
+            currentTimePhrasesGenericOneOf =
+            [
+                .. currentTimePhrasesGenericOneOf.OrderBy(s => s.Length)
+            ];
             timePhrasesGenericOneOf.TryAdd(key, currentTimePhrasesGenericOneOf);
+
+            currentTimePhrasesSuperGenericOneOf =
+            [
+                .. currentTimePhrasesSuperGenericOneOf.OrderBy(s => s.Length)
+            ];
             timePhrasesSuperGenericOneOf.TryAdd(key, currentTimePhrasesSuperGenericOneOf);
 
             startOfDay = startOfDay.AddMinutes(1);
