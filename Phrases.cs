@@ -82,7 +82,7 @@ public static class Phrases
     private static List<string> Pm =>
         ["pm", "p.m.", "p. m.", " pm", " p.m.", " p. m.", "  pm", "  p.m.", "  p. m."];
 
-    private static List<string> After => ["a little after ", "just after ", "about "];
+    private static List<string> ALittleAfter => ["a little after ", "just after ", "about "];
 
     private static List<string> AlmostAt => ["almost at ", "nearly ", "about "];
 
@@ -170,25 +170,45 @@ public static class Phrases
             // AM
             if (startOfDay.Hour < 12)
             {
-                switch (startOfDay.Minute)
-                {
-                    case 0:
-                        var hour = startOfDay.Hour;
-                        var hourWord = NumberToWord[hour];
+                var hour = startOfDay.Hour;
+                var hourWord = NumberToWord[hour];
 
-                        currentTimePhrasesOneOf.AddRange(
-                            Combine(
-                                ["At "],
-                                [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
-                                Am
-                            )
-                        );
-                        break;
+                if (startOfDay.Minute == 0)
+                {
+                    currentTimePhrasesOneOf.AddRange(
+                        Combine(
+                            ["At "],
+                            [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
+                            Am
+                        )
+                    );
+
+                    currentTimePhrasesOneOf.AddRange(
+                        Combine(
+                            ["At "],
+                            [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
+                            [" o'clock", " o’clock"],
+                            Am
+                        )
+                    );
+
+                    currentTimePhrasesOneOf.AddRange(AppendAm($"{hourWord}"));
+                    currentTimePhrasesOneOf.AddRange(AppendAm($"{hourWord} o'clock"));
+                    currentTimePhrasesOneOf.AddRange(AppendAm($"{hourWord} o’clock"));
+                    currentTimePhrasesOneOf.AddRange(AppendAm($"{hour} o'clock"));
+                    currentTimePhrasesOneOf.AddRange(AppendAm($"{hour} o’clock"));
+
+                    currentTimePhrasesOneOf.AddRange(AppendAm($"It struck {hourWord}"));
+                    currentTimePhrasesOneOf.AddRange(AppendAm($"It struck {hour}"));
+                    currentTimePhrasesOneOf.AddRange(AppendAm($"stroke of {hourWord}"));
+                    currentTimePhrasesOneOf.AddRange(AppendAm($"stroke of {hour}"));
                 }
 
                 currentTimePhrasesSuperGenericOneOf.AddRange(AppendAm($"{startOfDay:h:mm}"));
+                currentTimePhrasesSuperGenericOneOf.AddRange(AppendAm($"{startOfDay:h.mm}"));
             }
 
+            // AM
             if (startOfDay is { Hour: < 12, Minute: > 0 })
             {
                 var hour = startOfDay.Hour;
@@ -196,6 +216,11 @@ public static class Phrases
 
                 var minute = startOfDay.Minute;
                 var minuteWord = NumberToWord[minute];
+
+                var toHour = hour + 1;
+                var toHourWord = NumberToWord[toHour];
+                var toMinute = 60 - startOfDay.Minute;
+                var toMinuteWord = NumberToWord[toMinute];
 
                 // twelve minute(s) past nineteen
                 currentTimePhrasesOneOf.AddRange(
@@ -221,36 +246,163 @@ public static class Phrases
                 currentTimePhrasesOneOf.AddRange(AppendAm($"{minuteWord} after {hourWord}"));
                 currentTimePhrasesOneOf.AddRange(AppendAm($"{minute} after {hour}"));
 
-                if (startOfDay.Minute < 4)
+                // twelve minute(s) to nineteen
+                currentTimePhrasesOneOf.AddRange(
+                    AppendAm($"{toMinuteWord} {toMinutePlural} to {toHourWord}")
+                );
+
+                currentTimePhrasesOneOf.AddRange(
+                    AppendAm($"{toMinute} {toMinutePlural} to {toHour}")
+                );
+
+                switch (startOfDay.Minute)
                 {
-                    currentTimePhrasesOneOf.AddRange(
-                        Combine(After, [hourWord, hour.ToString(CultureInfo.InvariantCulture)], Am)
-                    );
+                    case < 4:
+                        currentTimePhrasesOneOf.AddRange(
+                            Combine(
+                                ALittleAfter,
+                                [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
+                                Am
+                            )
+                        );
+
+                        currentTimePhrasesOneOf.AddRange(
+                            Combine(
+                                ALittleAfter,
+                                [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
+                                [" o'clock", " o’clock"],
+                                Am
+                            )
+                        );
+                        break;
+                    case 15:
+                        currentTimePhrasesOneOf.AddRange(
+                            Combine(
+                                [
+                                    "quarter past ",
+                                    "quarter-past ",
+                                    "quarter after ",
+                                    "quarter-after "
+                                ],
+                                [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
+                                Am
+                            )
+                        );
+
+                        currentTimePhrasesOneOf.AddRange(
+                            Combine(
+                                [
+                                    "quarter past ",
+                                    "quarter-past ",
+                                    "quarter after ",
+                                    "quarter-after "
+                                ],
+                                [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
+                                [" o'clock", " o’clock"],
+                                Am
+                            )
+                        );
+                        break;
+                    case 30:
+                        currentTimePhrasesOneOf.AddRange(
+                            Combine(
+                                ["half past ", "half-past "],
+                                [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
+                                Am
+                            )
+                        );
+
+                        currentTimePhrasesOneOf.AddRange(
+                            Combine(
+                                ["half past ", "half-past "],
+                                [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
+                                [" o'clock", " o’clock"],
+                                Am
+                            )
+                        );
+                        break;
+                    case 45:
+                        currentTimePhrasesOneOf.AddRange(
+                            Combine(
+                                ["quarter to ", "quarter-to "],
+                                [toHourWord, toHour.ToString(CultureInfo.InvariantCulture)],
+                                Am
+                            )
+                        );
+
+                        currentTimePhrasesOneOf.AddRange(
+                            Combine(
+                                ["quarter to ", "quarter-to "],
+                                [toHourWord, toHour.ToString(CultureInfo.InvariantCulture)],
+                                [" o'clock", " o’clock"],
+                                Am
+                            )
+                        );
+                        break;
+                    case >= 57
+                    and < 60:
+                        currentTimePhrasesOneOf.AddRange(
+                            Combine(
+                                AlmostAt,
+                                [toHourWord, toHour.ToString(CultureInfo.InvariantCulture)],
+                                Am
+                            )
+                        );
+
+                        currentTimePhrasesOneOf.AddRange(
+                            Combine(
+                                AlmostAt,
+                                [toHourWord, toHour.ToString(CultureInfo.InvariantCulture)],
+                                [" o'clock", " o’clock"],
+                                Am
+                            )
+                        );
+                        break;
                 }
             }
 
             // PM
             if (startOfDay is { Hour: >= 12 and <= 23 })
             {
-                switch (startOfDay.Minute)
+                if (startOfDay.Minute == 0)
                 {
-                    case 0:
-                        var hour = startOfDay.Hour == 12 ? startOfDay.Hour : startOfDay.Hour - 12;
-                        var hourWord = NumberToWord[hour];
+                    var hour = startOfDay.Hour == 12 ? startOfDay.Hour : startOfDay.Hour - 12;
+                    var hourWord = NumberToWord[hour];
 
-                        currentTimePhrasesOneOf.AddRange(
-                            Combine(
-                                ["At "],
-                                [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
-                                Pm
-                            )
-                        );
-                        break;
+                    currentTimePhrasesOneOf.AddRange(
+                        Combine(
+                            ["At "],
+                            [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
+                            Pm
+                        )
+                    );
+
+                    currentTimePhrasesOneOf.AddRange(
+                        Combine(
+                            ["At "],
+                            [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
+                            [" o'clock", " o’clock"],
+                            Pm
+                        )
+                    );
+
+                    currentTimePhrasesOneOf.AddRange(AppendPm($"{hourWord}"));
+                    currentTimePhrasesOneOf.AddRange(AppendPm($"{hourWord} o'clock"));
+                    currentTimePhrasesOneOf.AddRange(AppendPm($"{hourWord} o’clock"));
+                    currentTimePhrasesOneOf.AddRange(AppendPm($"{hour} o'clock"));
+                    currentTimePhrasesOneOf.AddRange(AppendPm($"{hour} o’clock"));
+
+                    currentTimePhrasesOneOf.AddRange(AppendPm($"It struck {hourWord}"));
+                    currentTimePhrasesOneOf.AddRange(AppendPm($"It struck {hour}"));
+                    currentTimePhrasesOneOf.AddRange(AppendPm($"stroke of {hourWord}"));
+                    currentTimePhrasesOneOf.AddRange(AppendPm($"stroke of {hour}"));
                 }
 
                 currentTimePhrasesSuperGenericOneOf.AddRange(AppendPm($"{startOfDay:h:mm}"));
+                currentTimePhrasesSuperGenericOneOf.AddRange(AppendPm($"{startOfDay:h.mm}"));
             }
 
+            // PM
             if (startOfDay is { Hour: >= 12 and <= 23, Minute: > 0 })
             {
                 var hour = startOfDay.Hour == 12 ? startOfDay.Hour : startOfDay.Hour - 12;
@@ -258,6 +410,12 @@ public static class Phrases
 
                 var minute = startOfDay.Minute;
                 var minuteWord = NumberToWord[minute];
+
+                var toHour = hour + 1;
+                var toHourWord = NumberToWord[toHour];
+
+                var toMinute = 60 - startOfDay.Minute;
+                var toMinuteWord = NumberToWord[toMinute];
 
                 // twelve minute(s) past nineteen
                 currentTimePhrasesOneOf.AddRange(
@@ -283,104 +441,6 @@ public static class Phrases
                 currentTimePhrasesOneOf.AddRange(AppendPm($"{minuteWord} after {hourWord}"));
                 currentTimePhrasesOneOf.AddRange(AppendPm($"{minute} after {hour}"));
 
-                if (startOfDay.Minute < 4)
-                {
-                    currentTimePhrasesOneOf.AddRange(
-                        Combine(After, [hourWord, hour.ToString(CultureInfo.InvariantCulture)], Pm)
-                    );
-                }
-            }
-
-            // AM
-            if (startOfDay is { Hour: < 12, Minute: > 0 })
-            {
-                var hour = startOfDay.Hour;
-                var hourWord = NumberToWord[hour];
-
-                var toHour = hour + 1;
-                var toHourWord = NumberToWord[toHour];
-                var toMinute = 60 - startOfDay.Minute;
-                var toMinuteWord = NumberToWord[toMinute];
-
-                // twelve minute(s) to nineteen
-                currentTimePhrasesOneOf.AddRange(
-                    AppendAm($"{toMinuteWord} {toMinutePlural} to {toHourWord}")
-                );
-
-                currentTimePhrasesOneOf.AddRange(
-                    AppendAm($"{toMinute} {toMinutePlural} to {toHour}")
-                );
-
-                switch (startOfDay.Minute)
-                {
-                    case < 4:
-                        currentTimePhrasesOneOf.AddRange(
-                            Combine(
-                                After,
-                                [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
-                                [" o'clock", " o’clock"],
-                                Am
-                            )
-                        );
-                        break;
-                    case 15:
-                        currentTimePhrasesOneOf.AddRange(
-                            Combine(
-                                [
-                                    "quarter past ",
-                                    "quarter-past ",
-                                    "quarter after ",
-                                    "quarter-after "
-                                ],
-                                [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
-                                Am
-                            )
-                        );
-                        break;
-                    case 30:
-                        currentTimePhrasesOneOf.AddRange(
-                            Combine(
-                                ["half past ", "half-past "],
-                                [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
-                                Am
-                            )
-                        );
-                        break;
-                    case 45:
-                        currentTimePhrasesOneOf.AddRange(
-                            Combine(
-                                ["quarter to ", "quarter-to "],
-                                [toHourWord, toHour.ToString(CultureInfo.InvariantCulture)],
-                                Am
-                            )
-                        );
-                        break;
-                    case >= 57
-                    and < 60:
-                        currentTimePhrasesOneOf.AddRange(
-                            Combine(
-                                AlmostAt,
-                                [toHourWord, toHour.ToString(CultureInfo.InvariantCulture)],
-                                [" o'clock", " o’clock"],
-                                Am
-                            )
-                        );
-                        break;
-                }
-            }
-
-            // PM
-            if (startOfDay is { Hour: >= 12 and <= 23, Minute: > 0 })
-            {
-                var hour = startOfDay.Hour == 12 ? startOfDay.Hour : startOfDay.Hour - 12;
-                var hourWord = NumberToWord[hour];
-
-                var toHour = hour + 1;
-                var toHourWord = NumberToWord[toHour];
-
-                var toMinute = 60 - startOfDay.Minute;
-                var toMinuteWord = NumberToWord[toMinute];
-
                 // twelve minute(s) to nineteen
                 currentTimePhrasesOneOf.AddRange(
                     AppendPm($"{toMinuteWord} {toMinutePlural} to {toHourWord}")
@@ -394,7 +454,15 @@ public static class Phrases
                     case < 4:
                         currentTimePhrasesOneOf.AddRange(
                             Combine(
-                                After,
+                                ALittleAfter,
+                                [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
+                                Pm
+                            )
+                        );
+
+                        currentTimePhrasesOneOf.AddRange(
+                            Combine(
+                                ALittleAfter,
                                 [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
                                 [" o'clock", " o’clock"],
                                 Pm
@@ -415,12 +483,35 @@ public static class Phrases
                                 Pm
                             )
                         );
+
+                        currentTimePhrasesOneOf.AddRange(
+                            Combine(
+                                [
+                                    "quarter past ",
+                                    "quarter-past ",
+                                    "quarter after ",
+                                    "quarter-after "
+                                ],
+                                [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
+                                [" o'clock", " o’clock"],
+                                Pm
+                            )
+                        );
                         break;
                     case 30:
                         currentTimePhrasesOneOf.AddRange(
                             Combine(
                                 ["half past ", "half-past "],
                                 [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
+                                Pm
+                            )
+                        );
+
+                        currentTimePhrasesOneOf.AddRange(
+                            Combine(
+                                ["half past ", "half-past "],
+                                [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
+                                [" o'clock", " o’clock"],
                                 Pm
                             )
                         );
@@ -433,9 +524,26 @@ public static class Phrases
                                 Pm
                             )
                         );
+
+                        currentTimePhrasesOneOf.AddRange(
+                            Combine(
+                                ["quarter to ", "quarter-to "],
+                                [toHourWord, toHour.ToString(CultureInfo.InvariantCulture)],
+                                [" o'clock", " o’clock"],
+                                Pm
+                            )
+                        );
                         break;
                     case >= 57
                     and < 60:
+                        currentTimePhrasesOneOf.AddRange(
+                            Combine(
+                                AlmostAt,
+                                [toHourWord, toHour.ToString(CultureInfo.InvariantCulture)],
+                                Pm
+                            )
+                        );
+
                         currentTimePhrasesOneOf.AddRange(
                             Combine(
                                 AlmostAt,
@@ -449,6 +557,37 @@ public static class Phrases
             }
 
             // Generic
+            if (startOfDay.Hour is >= 0 and <= 23)
+            {
+                if (startOfDay.Minute == 0)
+                {
+                    var hour = startOfDay.Hour > 12 ? startOfDay.Hour - 12 : startOfDay.Hour;
+                    var hourWord = NumberToWord[hour];
+
+                    // currentTimePhrasesOneOf.AddRange(
+                    //     Combine(["At "], [hourWord, hour.ToString(CultureInfo.InvariantCulture)])
+                    // );
+
+                    currentTimePhrasesOneOf.AddRange(
+                        Combine(
+                            ["At "],
+                            [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
+                            [" o'clock", " o’clock"]
+                        )
+                    );
+
+                    currentTimePhrasesOneOf.Add($"{hourWord} o'clock");
+                    currentTimePhrasesOneOf.Add($"{hourWord} o’clock");
+                    currentTimePhrasesOneOf.Add($"{hour} o'clock");
+                    currentTimePhrasesOneOf.Add($"{hour} o’clock");
+
+                    currentTimePhrasesOneOf.Add($"It struck {hourWord}");
+                    currentTimePhrasesOneOf.Add($"It struck {hour}");
+                    currentTimePhrasesOneOf.Add($"stroke of {hourWord}");
+                    currentTimePhrasesOneOf.Add($"stroke of {hour}");
+                }
+            }
+
             if (startOfDay.Hour is >= 0 and <= 23 && startOfDay.Minute > 0)
             {
                 var hour = startOfDay.Hour > 12 ? startOfDay.Hour - 12 : startOfDay.Hour;
@@ -473,12 +612,6 @@ public static class Phrases
                 );
                 currentTimePhrasesGenericOneOf.Add($"{minute} {pastMinutePlural} after {hour}");
 
-                // currentTimePhrasesGenericOneOf.Add($"{minuteWord} past {hourWord}");
-                // currentTimePhrasesGenericOneOf.Add($"{minute} past {hour}");
-
-                // currentTimePhrasesGenericOneOf.Add($"{minuteWord} after {hourWord}");
-                // currentTimePhrasesGenericOneOf.Add($"{minute} after {hour}");
-
                 currentTimePhrasesGenericOneOf.Add(
                     $"{toMinuteWord} {toMinutePlural} to {toHourWord}"
                 );
@@ -489,13 +622,27 @@ public static class Phrases
                     case < 4:
                         currentTimePhrasesGenericOneOf.AddRange(
                             Combine(
-                                After,
+                                ALittleAfter,
                                 [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
                                 [" o'clock", " o’clock"]
                             )
                         );
+
                         break;
                     case 15:
+                        currentTimePhrasesGenericOneOf.AddRange(
+                            Combine(
+                                [
+                                    "quarter past ",
+                                    "quarter-past ",
+                                    "quarter after ",
+                                    "quarter-after "
+                                ],
+                                [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
+                                [" o'clock", " o’clock"]
+                            )
+                        );
+
                         currentTimePhrasesGenericOneOf.AddRange(
                             Combine(
                                 [
@@ -512,11 +659,27 @@ public static class Phrases
                         currentTimePhrasesGenericOneOf.AddRange(
                             Combine(
                                 ["half past ", "half-past "],
+                                [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
+                                [" o'clock", " o’clock"]
+                            )
+                        );
+
+                        currentTimePhrasesGenericOneOf.AddRange(
+                            Combine(
+                                ["half past ", "half-past "],
                                 [hourWord, hour.ToString(CultureInfo.InvariantCulture)]
                             )
                         );
                         break;
                     case 45:
+                        currentTimePhrasesGenericOneOf.AddRange(
+                            Combine(
+                                ["quarter to ", "quarter-to "],
+                                [toHourWord, toHour.ToString(CultureInfo.InvariantCulture)],
+                                [" o'clock", " o’clock"]
+                            )
+                        );
+
                         currentTimePhrasesGenericOneOf.AddRange(
                             Combine(
                                 ["quarter to ", "quarter-to "],
@@ -533,42 +696,9 @@ public static class Phrases
                                 [" o'clock", " o’clock"]
                             )
                         );
+
                         break;
                 }
-            }
-
-            // AM
-            if (startOfDay is { Hour: < 12, Minute: 0 })
-            {
-                var hour = startOfDay.Hour;
-                var hourWord = NumberToWord[hour];
-
-                currentTimePhrasesOneOf.AddRange(AppendAm($"{hourWord} o'clock"));
-                currentTimePhrasesOneOf.AddRange(AppendAm($"{hourWord} o’clock"));
-                currentTimePhrasesOneOf.AddRange(AppendAm($"{hour} o'clock"));
-                currentTimePhrasesOneOf.AddRange(AppendAm($"{hour} o’clock"));
-
-                currentTimePhrasesOneOf.AddRange(AppendAm($"It struck {hourWord}"));
-                currentTimePhrasesOneOf.AddRange(AppendAm($"It struck {hour}"));
-                currentTimePhrasesOneOf.AddRange(AppendAm($"stroke of {hourWord}"));
-                currentTimePhrasesOneOf.AddRange(AppendAm($"stroke of {hour}"));
-            }
-
-            // PM
-            if (startOfDay is { Hour: >= 12 and <= 23, Minute: 0 })
-            {
-                var hour = startOfDay.Hour == 12 ? startOfDay.Hour : startOfDay.Hour - 12;
-                var hourWord = NumberToWord[hour];
-
-                currentTimePhrasesOneOf.AddRange(AppendPm($"{hourWord} o'clock"));
-                currentTimePhrasesOneOf.AddRange(AppendPm($"{hourWord} o’clock"));
-                currentTimePhrasesOneOf.AddRange(AppendPm($"{hour} o'clock"));
-                currentTimePhrasesOneOf.AddRange(AppendPm($"{hour} o’clock"));
-
-                currentTimePhrasesOneOf.AddRange(AppendPm($"It struck {hourWord}"));
-                currentTimePhrasesOneOf.AddRange(AppendPm($"It struck {hour}"));
-                currentTimePhrasesOneOf.AddRange(AppendPm($"stroke of {hourWord}"));
-                currentTimePhrasesOneOf.AddRange(AppendPm($"stroke of {hour}"));
             }
 
             // AM
@@ -585,46 +715,40 @@ public static class Phrases
                     case < 4:
                         currentTimePhrasesOneOf.AddRange(
                             Combine(
-                                After,
+                                ALittleAfter,
                                 [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
-                                [
-                                    " in the morning",
-                                    " in the morn",
-                                    " that morning",
-                                    " that morn",
-                                    " o’clock in the morning",
-                                    " o’clock in the morn",
-                                    " o'clock in the morning",
-                                    " o'clock in the morn",
-                                    " o’clock that morning",
-                                    " o’clock that morn",
-                                    " o'clock that morning",
-                                    " o'clock that morn"
-                                ]
+                                [" in the morning", " in the morn", " that morning", " that morn"]
                             )
                         );
+
+                        currentTimePhrasesOneOf.AddRange(
+                            Combine(
+                                ALittleAfter,
+                                [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
+                                [" o'clock", " o’clock"],
+                                [" in the morning", " in the morn", " that morning", " that morn"]
+                            )
+                        );
+
                         break;
                     case 15:
                         currentTimePhrasesOneOf.AddRange(
                             Combine(
                                 ["quarter past ", "quarter-past "],
                                 [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
-                                [
-                                    " in the morning",
-                                    " in the morn",
-                                    " that morning",
-                                    " that morn",
-                                    " o’clock in the morning",
-                                    " o’clock in the morn",
-                                    " o'clock in the morning",
-                                    " o'clock in the morn",
-                                    " o’clock that morning",
-                                    " o’clock that morn",
-                                    " o'clock that morning",
-                                    " o'clock that morn"
-                                ]
+                                [" in the morning", " in the morn", " that morning", " that morn"]
                             )
                         );
+
+                        currentTimePhrasesOneOf.AddRange(
+                            Combine(
+                                ["quarter past ", "quarter-past "],
+                                [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
+                                [" o'clock", " o’clock"],
+                                [" in the morning", " in the morn", " that morning", " that morn"]
+                            )
+                        );
+
                         break;
 
                     case 30:
@@ -632,22 +756,19 @@ public static class Phrases
                             Combine(
                                 ["half past ", "half-past "],
                                 [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
-                                [
-                                    " in the morning",
-                                    " in the morn",
-                                    " that morning",
-                                    " that morn",
-                                    " o’clock in the morning",
-                                    " o’clock in the morn",
-                                    " o'clock in the morning",
-                                    " o'clock in the morn",
-                                    " o’clock that morning",
-                                    " o’clock that morn",
-                                    " o'clock that morning",
-                                    " o'clock that morn"
-                                ]
+                                [" in the morning", " in the morn", " that morning", " that morn"]
                             )
                         );
+
+                        currentTimePhrasesOneOf.AddRange(
+                            Combine(
+                                ["half past ", "half-past "],
+                                [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
+                                [" o'clock", " o’clock"],
+                                [" in the morning", " in the morn", " that morning", " that morn"]
+                            )
+                        );
+
                         break;
 
                     case 45:
@@ -655,22 +776,19 @@ public static class Phrases
                             Combine(
                                 ["quarter to ", "quarter-to "],
                                 [toHourWord, toHour.ToString(CultureInfo.InvariantCulture)],
-                                [
-                                    " in the morning",
-                                    " in the morn",
-                                    " that morning",
-                                    " that morn",
-                                    " o’clock in the morning",
-                                    " o’clock in the morn",
-                                    " o'clock in the morning",
-                                    " o'clock in the morn",
-                                    " o’clock that morning",
-                                    " o’clock that morn",
-                                    " o'clock that morning",
-                                    " o'clock that morn"
-                                ]
+                                [" in the morning", " in the morn", " that morning", " that morn"]
                             )
                         );
+
+                        currentTimePhrasesOneOf.AddRange(
+                            Combine(
+                                ["quarter to ", "quarter-to "],
+                                [toHourWord, toHour.ToString(CultureInfo.InvariantCulture)],
+                                [" o'clock", " o’clock"],
+                                [" in the morning", " in the morn", " that morning", " that morn"]
+                            )
+                        );
+
                         break;
 
                     case >= 57
@@ -679,22 +797,19 @@ public static class Phrases
                             Combine(
                                 AlmostAt,
                                 [toHourWord, toHour.ToString(CultureInfo.InvariantCulture)],
-                                [
-                                    " in the morning",
-                                    " in the morn",
-                                    " that morning",
-                                    " that morn",
-                                    " o’clock in the morning",
-                                    " o’clock in the morn",
-                                    " o'clock in the morning",
-                                    " o'clock in the morn",
-                                    " o’clock that morning",
-                                    " o’clock that morn",
-                                    " o'clock that morning",
-                                    " o'clock that morn"
-                                ]
+                                [" in the morning", " in the morn", " that morning", " that morn"]
                             )
                         );
+
+                        currentTimePhrasesOneOf.AddRange(
+                            Combine(
+                                AlmostAt,
+                                [toHourWord, toHour.ToString(CultureInfo.InvariantCulture)],
+                                [" o'clock", " o’clock"],
+                                [" in the morning", " in the morn", " that morning", " that morn"]
+                            )
+                        );
+
                         break;
                 }
             }
@@ -707,20 +822,15 @@ public static class Phrases
                 currentTimePhrasesOneOf.AddRange(
                     Combine(
                         [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
-                        [
-                            " in the morning",
-                            " in the morn",
-                            " that morning",
-                            " that morn",
-                            " o’clock in the morning",
-                            " o’clock in the morn",
-                            " o'clock in the morning",
-                            " o'clock in the morn",
-                            " o’clock that morning",
-                            " o’clock that morn",
-                            " o'clock that morning",
-                            " o'clock that morn"
-                        ]
+                        [" in the morning", " in the morn", " that morning", " that morn"]
+                    )
+                );
+
+                currentTimePhrasesOneOf.AddRange(
+                    Combine(
+                        [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
+                        [" o'clock", " o’clock"],
+                        [" in the morning", " in the morn", " that morning", " that morn"]
                     )
                 );
             }
@@ -739,7 +849,7 @@ public static class Phrases
                     case < 4:
                         currentTimePhrasesOneOf.AddRange(
                             Combine(
-                                After,
+                                ALittleAfter,
                                 [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
                                 [
                                     " in the afternoon",
@@ -747,22 +857,27 @@ public static class Phrases
                                     " in the evening",
                                     " that evening",
                                     " at night",
-                                    " that night",
-                                    " o’clock in the afternoon",
-                                    " o'clock in the afternoon",
-                                    " o’clock that afternoon",
-                                    " o'clock that afternoon",
-                                    " o’clock in the evening",
-                                    " o'clock in the evening",
-                                    " o’clock that evening",
-                                    " o'clock that evening",
-                                    " o’clock at night",
-                                    " o'clock that night",
-                                    " o’clock at night",
-                                    " o'clock that night"
+                                    " that night"
                                 ]
                             )
                         );
+
+                        currentTimePhrasesOneOf.AddRange(
+                            Combine(
+                                ALittleAfter,
+                                [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
+                                [" o'clock", " o’clock"],
+                                [
+                                    " in the afternoon",
+                                    " that afternoon",
+                                    " in the evening",
+                                    " that evening",
+                                    " at night",
+                                    " that night"
+                                ]
+                            )
+                        );
+
                         break;
                     case 15:
                         currentTimePhrasesOneOf.AddRange(
@@ -775,22 +890,27 @@ public static class Phrases
                                     " in the evening",
                                     " that evening",
                                     " at night",
-                                    " that night",
-                                    " o’clock in the afternoon",
-                                    " o'clock in the afternoon",
-                                    " o’clock that afternoon",
-                                    " o'clock that afternoon",
-                                    " o’clock in the evening",
-                                    " o'clock in the evening",
-                                    " o’clock that evening",
-                                    " o'clock that evening",
-                                    " o’clock at night",
-                                    " o'clock that night",
-                                    " o’clock at night",
-                                    " o'clock that night"
+                                    " that night"
                                 ]
                             )
                         );
+
+                        currentTimePhrasesOneOf.AddRange(
+                            Combine(
+                                ["quarter past ", "quarter-past "],
+                                [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
+                                [" o'clock", " o’clock"],
+                                [
+                                    " in the afternoon",
+                                    " that afternoon",
+                                    " in the evening",
+                                    " that evening",
+                                    " at night",
+                                    " that night"
+                                ]
+                            )
+                        );
+
                         break;
                     case 30:
                         currentTimePhrasesOneOf.AddRange(
@@ -803,22 +923,27 @@ public static class Phrases
                                     " in the evening",
                                     " that evening",
                                     " at night",
-                                    " that night",
-                                    " o’clock in the afternoon",
-                                    " o'clock in the afternoon",
-                                    " o’clock that afternoon",
-                                    " o'clock that afternoon",
-                                    " o’clock in the evening",
-                                    " o'clock in the evening",
-                                    " o’clock that evening",
-                                    " o'clock that evening",
-                                    " o’clock at night",
-                                    " o'clock that night",
-                                    " o’clock at night",
-                                    " o'clock that night"
+                                    " that night"
                                 ]
                             )
                         );
+
+                        currentTimePhrasesOneOf.AddRange(
+                            Combine(
+                                ["half past ", "half-past "],
+                                [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
+                                [" o'clock", " o’clock"],
+                                [
+                                    " in the afternoon",
+                                    " that afternoon",
+                                    " in the evening",
+                                    " that evening",
+                                    " at night",
+                                    " that night"
+                                ]
+                            )
+                        );
+
                         break;
                     case 45:
                         currentTimePhrasesOneOf.AddRange(
@@ -831,22 +956,27 @@ public static class Phrases
                                     " in the evening",
                                     " that evening",
                                     " at night",
-                                    " that night",
-                                    " o’clock in the afternoon",
-                                    " o'clock in the afternoon",
-                                    " o’clock that afternoon",
-                                    " o'clock that afternoon",
-                                    " o’clock in the evening",
-                                    " o'clock in the evening",
-                                    " o’clock that evening",
-                                    " o'clock that evening",
-                                    " o’clock at night",
-                                    " o'clock that night",
-                                    " o’clock at night",
-                                    " o'clock that night"
+                                    " that night"
                                 ]
                             )
                         );
+
+                        currentTimePhrasesOneOf.AddRange(
+                            Combine(
+                                ["quarter to ", "quarter-to "],
+                                [toHourWord, toHour.ToString(CultureInfo.InvariantCulture)],
+                                [" o'clock", " o’clock"],
+                                [
+                                    " in the afternoon",
+                                    " that afternoon",
+                                    " in the evening",
+                                    " that evening",
+                                    " at night",
+                                    " that night"
+                                ]
+                            )
+                        );
+
                         break;
                     case >= 57
                     and < 60:
@@ -860,22 +990,27 @@ public static class Phrases
                                     " in the evening",
                                     " that evening",
                                     " at night",
-                                    " that night",
-                                    " o’clock in the afternoon",
-                                    " o'clock in the afternoon",
-                                    " o’clock that afternoon",
-                                    " o'clock that afternoon",
-                                    " o’clock in the evening",
-                                    " o'clock in the evening",
-                                    " o’clock that evening",
-                                    " o'clock that evening",
-                                    " o’clock at night",
-                                    " o'clock that night",
-                                    " o’clock at night",
-                                    " o'clock that night"
+                                    " that night"
                                 ]
                             )
                         );
+
+                        currentTimePhrasesOneOf.AddRange(
+                            Combine(
+                                AlmostAt,
+                                [toHourWord, toHour.ToString(CultureInfo.InvariantCulture)],
+                                [" o'clock", " o’clock"],
+                                [
+                                    " in the afternoon",
+                                    " that afternoon",
+                                    " in the evening",
+                                    " that evening",
+                                    " at night",
+                                    " that night"
+                                ]
+                            )
+                        );
+
                         break;
                 }
             }
@@ -894,19 +1029,22 @@ public static class Phrases
                             " in the evening",
                             " that evening",
                             " at night",
-                            " that night",
-                            " o’clock in the afternoon",
-                            " o'clock in the afternoon",
-                            " o’clock that afternoon",
-                            " o'clock that afternoon",
-                            " o’clock in the evening",
-                            " o'clock in the evening",
-                            " o’clock that evening",
-                            " o'clock that evening",
-                            " o’clock at night",
-                            " o'clock that night",
-                            " o’clock at night",
-                            " o'clock that night"
+                            " that night"
+                        ]
+                    )
+                );
+
+                currentTimePhrasesOneOf.AddRange(
+                    Combine(
+                        [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
+                        [" o'clock", " o’clock"],
+                        [
+                            " in the afternoon",
+                            " that afternoon",
+                            " in the evening",
+                            " that evening",
+                            " at night",
+                            " that night"
                         ]
                     )
                 );
@@ -980,22 +1118,23 @@ public static class Phrases
             }
 
             currentTimePhrasesSuperGenericOneOf.Add($"{startOfDay:HH:mm}h");
+            currentTimePhrasesSuperGenericOneOf.Add($"{startOfDay:HHmm}h");
             currentTimePhrasesSuperGenericOneOf.Add($"{startOfDay:HH:mm}");
 
             var key = startOfDay.ToString("HH:mm", CultureInfo.InvariantCulture);
 
-            currentTimePhrasesOneOf = [.. currentTimePhrasesOneOf.OrderBy(s => s.Length)];
+            currentTimePhrasesOneOf = [.. currentTimePhrasesOneOf.OrderByDescending(s => s.Length)];
             timePhrasesOneOf.TryAdd(key, currentTimePhrasesOneOf);
 
             currentTimePhrasesGenericOneOf =
             [
-                .. currentTimePhrasesGenericOneOf.OrderBy(s => s.Length)
+                .. currentTimePhrasesGenericOneOf.OrderByDescending(s => s.Length)
             ];
             timePhrasesGenericOneOf.TryAdd(key, currentTimePhrasesGenericOneOf);
 
             currentTimePhrasesSuperGenericOneOf =
             [
-                .. currentTimePhrasesSuperGenericOneOf.OrderBy(s => s.Length)
+                .. currentTimePhrasesSuperGenericOneOf.OrderByDescending(s => s.Length)
             ];
             timePhrasesSuperGenericOneOf.TryAdd(key, currentTimePhrasesSuperGenericOneOf);
 

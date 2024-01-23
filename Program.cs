@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
+using System.Globalization;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -10,7 +11,8 @@ var jsonSerializerOptions = new JsonSerializerOptions
     Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
 };
 
-const string outputDirectory = "../quotes.literaturetime";
+const string outputDirectory = "../quotes.literaturetime.temp";
+
 const string gutPath = "/Users/blomma/Downloads/gutenberg";
 
 Directory.CreateDirectory(outputDirectory);
@@ -37,7 +39,7 @@ File.WriteAllText(
     timePhrasesSuperGenericOneOfJson
 );
 
-var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 1 };
+var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 3 };
 
 var titlesExclusion = new List<string>
 {
@@ -959,7 +961,14 @@ var titlesExclusion = new List<string>
     "Woman in Sacred History",
     "Women in white raiment",
     "Works of Martin Luther",
-    "Young Folks' Bible in Words of Easy Reading"
+    "Young Folks' Bible in Words of Easy Reading",
+    "Systematic Theology (Volume 3 of 3)",
+    "Systematic Theology (Volume 2 of 3)",
+    "Systematic Theology (Volume 1 of 3)",
+    "Education",
+    "Armor and Arms",
+    "The Mormon Doctrine of Deity",
+    "The Fundamental Doctrines of the Christian faith"
 };
 
 var authorExclusion = new List<string>
@@ -983,220 +992,249 @@ List<LiteratureTime> literatureTimes = [];
 
 List<string> fileDirectoryDone = [];
 
-var fileDirectoryDoneDate = DateTime.UnixEpoch;
+var lastSeekTime = DateTime.UnixEpoch;
 if (File.Exists($"{outputDirectory}/fileDirectoryDone.json"))
 {
     var content = File.ReadAllText($"{outputDirectory}/fileDirectoryDone.json");
-    fileDirectoryDoneDate = File.GetLastWriteTimeUtc($"{outputDirectory}/fileDirectoryDone.json");
     fileDirectoryDone = JsonSerializer.Deserialize<List<string>>(content) ?? [];
+
+    content = File.ReadAllText($"{outputDirectory}/lastSeekTime");
+    var unixTimeSeconds = long.Parse(content, CultureInfo.InvariantCulture);
+    lastSeekTime = DateTimeOffset.FromUnixTimeSeconds(unixTimeSeconds).LocalDateTime;
 }
 
-Console.WriteLine(fileDirectoryDoneDate);
+Console.WriteLine(lastSeekTime);
 
-var totalFiles = files.Count;
-var processedFiles = 0;
-
-foreach (var file in files)
+Console.CancelKeyPress += (s, e) =>
 {
-    processedFiles += 1;
+    var fileDirectoryDoneJson = JsonSerializer.Serialize(fileDirectoryDone, jsonSerializerOptions);
+    File.WriteAllText($"{outputDirectory}/fileDirectoryDone.json", fileDirectoryDoneJson);
 
-    var filePath = Path.GetDirectoryName(file);
-
-    var fileDirectory = filePath?.Split(Path.DirectorySeparatorChar).LastOrDefault();
-    if (fileDirectory == null)
-    {
-        continue;
-    }
-
-    fileDirectory = fileDirectory.ToLowerInvariant();
-    if (fileDirectory == "old")
-    {
-        continue;
-    }
-
-    var fileToRead = Path.Combine(filePath!, $"{fileDirectory}.txt");
-
-    // Prefer utf-8, files that end in -0
-    // Otherwise prefer files that end in -8
-    // else fallback to default
-    var utf8File = Path.Combine(filePath!, $"{fileDirectory}-0.txt");
-    var iso8859_1 = Path.Combine(filePath!, $"{fileDirectory}-8.txt");
-    Encoding encoding = Encoding.ASCII;
-    if (File.Exists(utf8File))
-    {
-        fileToRead = utf8File;
-        encoding = Encoding.UTF8;
-    }
-    else if (File.Exists(iso8859_1))
-    {
-        fileToRead = iso8859_1;
-        encoding = Encoding.Latin1;
-    }
-
-    if (!File.Exists(fileToRead))
-    {
-        // Console.WriteLine($"Skipping (wrong format) {file} - {processedFiles}:{totalFiles}");
-        continue;
-    }
-
-    var fileToReadDate = File.GetLastWriteTimeUtc(fileToRead);
-    if (fileDirectoryDone.Contains(fileDirectory))
-    {
-        if (fileToReadDate >= fileDirectoryDoneDate)
-        {
-            Console.WriteLine($"Updating (modified) {file} - {processedFiles}:{totalFiles}");
-        }
-        else
-        {
-            // Console.WriteLine($"Skipping (directory done) {file} - {processedFiles}:{totalFiles}");
-            continue;
-        }
-    }
-
-    Console.WriteLine($"{fileToRead} - {processedFiles}:{totalFiles}");
-
-    var lines = File.ReadAllLines(fileToRead, encoding);
-    var title = "";
-    var author = "";
-    var language = "";
-
-    var startIndex = -1;
-    for (var i = 0; i < lines.Length; i++)
-    {
-        var line = lines[i];
-        if (string.IsNullOrWhiteSpace(line))
-        {
-            continue;
-        }
-
-        if (line.StartsWith("Posting Date:", StringComparison.OrdinalIgnoreCase))
-        {
-            continue;
-        }
-
-        if (line.StartsWith("Release Date:", StringComparison.OrdinalIgnoreCase))
-        {
-            continue;
-        }
-
-        if (line.StartsWith("Language:", StringComparison.OrdinalIgnoreCase))
-        {
-            language = line.Replace("Language:", "", StringComparison.InvariantCultureIgnoreCase)
-                .Trim();
-            if (string.IsNullOrEmpty(language))
-            {
-                break;
-            }
-
-            if (!language.Contains("English", StringComparison.OrdinalIgnoreCase))
-            {
-                break;
-            }
-
-            continue;
-        }
-
-        if (line.StartsWith("[Most recently updated:", StringComparison.OrdinalIgnoreCase))
-        {
-            continue;
-        }
-
-        if (line.StartsWith("Title: ", StringComparison.OrdinalIgnoreCase))
-        {
-            title = line.Replace("Title:", "", StringComparison.InvariantCultureIgnoreCase).Trim();
-            if (string.IsNullOrEmpty(title))
-            {
-                break;
-            }
-
-            if (titlesExclusion.Contains(title))
-            {
-                break;
-            }
-
-            continue;
-        }
-
-        if (line.StartsWith("Author: ", StringComparison.OrdinalIgnoreCase))
-        {
-            author = line.Replace("Author:", "", StringComparison.InvariantCultureIgnoreCase)
-                .Trim();
-            if (string.IsNullOrEmpty(author))
-            {
-                break;
-            }
-
-            if (authorExclusion.Contains(author))
-            {
-                break;
-            }
-
-            continue;
-        }
-
-        if (
-            !string.IsNullOrEmpty(title)
-            && !string.IsNullOrEmpty(author)
-            && !string.IsNullOrEmpty(language)
-        )
-        {
-            startIndex = i;
-            break;
-        }
-    }
-
-    var matches = new ConcurrentDictionary<int, Match>();
-
-    if (startIndex != -1)
-    {
-        Parallel.For(
-            startIndex + 1,
-            lines.Length,
-            parallelOptions,
-            index =>
-            {
-                var line = lines[index];
-                var result = Matcher.FindMatches(
-                    timePhrasesOneOf,
-                    timePhrasesGenericOneOf,
-                    timePhrasesSuperGenericOneOf,
-                    line
-                );
-                if (result.Matches.Count > 0)
-                {
-                    matches.TryAdd(index, result);
-                }
-            }
-        );
-    }
-
-    var literatureTimesFromMatches = Matcher.GenerateQuotesFromMatches(
-        matches,
-        lines,
-        title,
-        author,
-        fileDirectory
+    File.WriteAllText(
+        $"{outputDirectory}/lastSeekTime",
+        DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture)
     );
+};
 
-    literatureTimes.AddRange(literatureTimesFromMatches);
+try
+{
+    var totalFiles = files.Count;
+    var processedFiles = 0;
 
-    var lookup = literatureTimesFromMatches.ToLookup(t => t.Time);
-    foreach (var literatureTimesIndexGroup in lookup)
+    foreach (var file in files)
     {
-        var jsonString = JsonSerializer.Serialize(
-            literatureTimesIndexGroup.ToList(),
-            jsonSerializerOptions
+        processedFiles += 1;
+
+        var filePath = Path.GetDirectoryName(file);
+
+        var fileDirectory = filePath?.Split(Path.DirectorySeparatorChar).LastOrDefault();
+        if (fileDirectory == null)
+        {
+            continue;
+        }
+
+        fileDirectory = fileDirectory.ToLowerInvariant();
+        if (fileDirectory == "old")
+        {
+            continue;
+        }
+
+        var fileToRead = Path.Combine(filePath!, $"{fileDirectory}.txt");
+
+        // Prefer utf-8, files that end in -0
+        // Otherwise prefer files that end in -8
+        // else fallback to default
+        var utf8File = Path.Combine(filePath!, $"{fileDirectory}-0.txt");
+        var iso8859_1 = Path.Combine(filePath!, $"{fileDirectory}-8.txt");
+        Encoding encoding = Encoding.ASCII;
+        if (File.Exists(utf8File))
+        {
+            fileToRead = utf8File;
+            encoding = Encoding.UTF8;
+        }
+        else if (File.Exists(iso8859_1))
+        {
+            fileToRead = iso8859_1;
+            encoding = Encoding.Latin1;
+        }
+
+        if (!File.Exists(fileToRead))
+        {
+            // Console.WriteLine($"Skipping (wrong format) {file} - {processedFiles}:{totalFiles}");
+            continue;
+        }
+
+        var fileToReadDate = File.GetLastWriteTimeUtc(fileToRead);
+        if (fileDirectoryDone.Contains(fileDirectory))
+        {
+            if (fileToReadDate >= lastSeekTime)
+            {
+                Console.WriteLine($"Updating (modified) {file} - {processedFiles}:{totalFiles}");
+            }
+            else
+            {
+                // Console.WriteLine($"Skipping (directory done) {file} - {processedFiles}:{totalFiles}");
+                continue;
+            }
+        }
+
+        Console.WriteLine($"{fileToRead} - {processedFiles}:{totalFiles}");
+
+        var lines = File.ReadAllLines(fileToRead, encoding);
+        var title = "";
+        var author = "";
+        var language = "";
+
+        var startIndex = -1;
+        for (var i = 0; i < lines.Length; i++)
+        {
+            var line = lines[i];
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                continue;
+            }
+
+            if (line.StartsWith("Posting Date:", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (line.StartsWith("Release Date:", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (line.StartsWith("Language:", StringComparison.OrdinalIgnoreCase))
+            {
+                language = line.Replace(
+                        "Language:",
+                        "",
+                        StringComparison.InvariantCultureIgnoreCase
+                    )
+                    .Trim();
+                if (string.IsNullOrEmpty(language))
+                {
+                    break;
+                }
+
+                if (!language.Contains("English", StringComparison.OrdinalIgnoreCase))
+                {
+                    break;
+                }
+
+                continue;
+            }
+
+            if (line.StartsWith("[Most recently updated:", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (line.StartsWith("Title: ", StringComparison.OrdinalIgnoreCase))
+            {
+                title = line.Replace("Title:", "", StringComparison.InvariantCultureIgnoreCase)
+                    .Trim();
+                if (string.IsNullOrEmpty(title))
+                {
+                    break;
+                }
+
+                if (titlesExclusion.Contains(title))
+                {
+                    break;
+                }
+
+                continue;
+            }
+
+            if (line.StartsWith("Author: ", StringComparison.OrdinalIgnoreCase))
+            {
+                author = line.Replace("Author:", "", StringComparison.InvariantCultureIgnoreCase)
+                    .Trim();
+                if (string.IsNullOrEmpty(author))
+                {
+                    break;
+                }
+
+                if (authorExclusion.Contains(author))
+                {
+                    break;
+                }
+
+                continue;
+            }
+
+            if (
+                !string.IsNullOrEmpty(title)
+                && !string.IsNullOrEmpty(author)
+                && !string.IsNullOrEmpty(language)
+            )
+            {
+                startIndex = i;
+                break;
+            }
+        }
+
+        var matches = new ConcurrentDictionary<int, Match>();
+
+        if (startIndex != -1)
+        {
+            Parallel.For(
+                startIndex + 1,
+                lines.Length,
+                parallelOptions,
+                index =>
+                {
+                    var line = lines[index];
+                    var result = Matcher.FindMatches(
+                        timePhrasesOneOf,
+                        timePhrasesGenericOneOf,
+                        timePhrasesSuperGenericOneOf,
+                        line
+                    );
+                    if (result.Matches.Count > 0)
+                    {
+                        matches.TryAdd(index, result);
+                    }
+                }
+            );
+        }
+
+        var literatureTimesFromMatches = Matcher.GenerateQuotesFromMatches(
+            matches,
+            lines,
+            title,
+            author,
+            fileDirectory
         );
 
-        var directory =
-            $"{outputDirectory}/{literatureTimesIndexGroup.Key.Replace(":", "_", StringComparison.InvariantCultureIgnoreCase)}";
-        Directory.CreateDirectory(directory);
+        literatureTimes.AddRange(literatureTimesFromMatches);
 
-        File.WriteAllText($"{directory}/{fileDirectory}.json", jsonString);
+        var lookup = literatureTimesFromMatches.ToLookup(t => t.Time);
+        foreach (var literatureTimesIndexGroup in lookup)
+        {
+            var jsonString = JsonSerializer.Serialize(
+                literatureTimesIndexGroup.ToList(),
+                jsonSerializerOptions
+            );
+
+            var directory =
+                $"{outputDirectory}/{literatureTimesIndexGroup.Key.Replace(":", "_", StringComparison.InvariantCultureIgnoreCase)}";
+            Directory.CreateDirectory(directory);
+
+            File.WriteAllText($"{directory}/{fileDirectory}.json", jsonString);
+        }
+
+        fileDirectoryDone.Add(fileDirectory);
     }
-
-    fileDirectoryDone.Add(fileDirectory);
 }
+finally
+{
+    var fileDirectoryDoneJson = JsonSerializer.Serialize(fileDirectoryDone, jsonSerializerOptions);
+    File.WriteAllText($"{outputDirectory}/fileDirectoryDone.json", fileDirectoryDoneJson);
 
-var fileDirectoryDoneJson = JsonSerializer.Serialize(fileDirectoryDone, jsonSerializerOptions);
-File.WriteAllText($"{outputDirectory}/fileDirectoryDone.json", fileDirectoryDoneJson);
+    File.WriteAllText(
+        $"{outputDirectory}/lastSeekTime",
+        DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture)
+    );
+}

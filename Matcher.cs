@@ -19,9 +19,51 @@ public static class Matcher
         {
             foreach (var phrase in timePhraseOneOf.Value)
             {
-                if (!line.Contains(phrase, StringComparison.OrdinalIgnoreCase))
+                var startIndex = line.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
+                if (startIndex == -1)
                 {
                     continue;
+                }
+
+                // The match is not at the start of the line, so we check that
+                if (startIndex > 0 && char.IsNumber(phrase.First()))
+                {
+                    var beforeChar = line[startIndex - 1];
+
+                    // Phrase is 12:12
+                    // Sequence is matched on is 12:12:12
+                    if (beforeChar == ':')
+                    {
+                        continue;
+                    }
+
+                    // Phrase is 2:12
+                    // Sequence is matched on is 12:12
+                    if (char.IsNumber(beforeChar))
+                    {
+                        continue;
+                    }
+                }
+
+                // The match is not the last thing on the line, so we check that
+                var lastIndex = startIndex + phrase.Length - 1;
+                if (lastIndex < (line.Length - 1) && char.IsNumber(phrase.Last()))
+                {
+                    var afterChar = line[lastIndex + 1];
+
+                    // Phrase is 12:12
+                    // Sequence is matched on is 12:12:12
+                    if (afterChar == ':')
+                    {
+                        continue;
+                    }
+
+                    // Phrase is 12:1
+                    // Sequence is matched on is 12:12
+                    if (char.IsNumber(afterChar))
+                    {
+                        continue;
+                    }
                 }
 
                 matches.Add(timePhraseOneOf.Key, phrase);
@@ -38,9 +80,51 @@ public static class Matcher
         {
             foreach (var phrase in timePhraseOneOf.Value)
             {
-                if (!line.Contains(phrase, StringComparison.OrdinalIgnoreCase))
+                var startIndex = line.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
+                if (startIndex == -1)
                 {
                     continue;
+                }
+
+                // The match is not at the start of the line, so we check that
+                if (startIndex > 0 && char.IsNumber(phrase.First()))
+                {
+                    var beforeChar = line[startIndex - 1];
+
+                    // Phrase is 12:12
+                    // Sequence is matched on is 12:12:12
+                    if (beforeChar == ':')
+                    {
+                        continue;
+                    }
+
+                    // Phrase is 2:12
+                    // Sequence is matched on is 12:12
+                    if (char.IsNumber(beforeChar))
+                    {
+                        continue;
+                    }
+                }
+
+                // The match is not the last thing on the line, so we check that
+                var lastIndex = startIndex + phrase.Length - 1;
+                if (lastIndex < (line.Length - 1) && char.IsNumber(phrase.Last()))
+                {
+                    var afterChar = line[lastIndex + 1];
+
+                    // Phrase is 12:12
+                    // Sequence is matched on is 12:12:12
+                    if (afterChar == ':')
+                    {
+                        continue;
+                    }
+
+                    // Phrase is 12:1
+                    // Sequence is matched on is 12:12
+                    if (char.IsNumber(afterChar))
+                    {
+                        continue;
+                    }
                 }
 
                 matches.Add(timePhraseOneOf.Key, phrase);
@@ -64,7 +148,7 @@ public static class Matcher
                 }
 
                 // The match is not at the start of the line, so we check that
-                if (startIndex > 0)
+                if (startIndex > 0 && char.IsNumber(phrase.First()))
                 {
                     var beforeChar = line[startIndex - 1];
 
@@ -85,7 +169,7 @@ public static class Matcher
 
                 // The match is not the last thing on the line, so we check that
                 var lastIndex = startIndex + phrase.Length - 1;
-                if (lastIndex < (line.Length - 1))
+                if (lastIndex < (line.Length - 1) && char.IsNumber(phrase.Last()))
                 {
                     var afterChar = line[lastIndex + 1];
 
@@ -96,7 +180,7 @@ public static class Matcher
                         continue;
                     }
 
-                    // Phrase is 2:12
+                    // Phrase is 12:1
                     // Sequence is matched on is 12:12
                     if (char.IsNumber(afterChar))
                     {
