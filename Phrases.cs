@@ -1119,7 +1119,6 @@ public static class Phrases
 
             currentTimePhrasesSuperGenericOneOf.Add($"{startOfDay:HH:mm}h");
             currentTimePhrasesSuperGenericOneOf.Add($"{startOfDay:HHmm}h");
-            currentTimePhrasesSuperGenericOneOf.Add($"{startOfDay:HH:mm}");
 
             var key = startOfDay.ToString("HH:mm", CultureInfo.InvariantCulture);
 
