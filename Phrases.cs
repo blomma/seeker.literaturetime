@@ -219,41 +219,51 @@ public static class Phrases
 
                 var toHour = hour + 1;
                 var toHourWord = NumberToWord[toHour];
-                var toMinute = 60 - startOfDay.Minute;
+
+                var toMinute = 60 - minute;
                 var toMinuteWord = NumberToWord[toMinute];
 
-                // twelve minute(s) past nineteen
+                // twelve minute(s) past nineteen a.m.
                 currentTimePhrasesOneOf.AddRange(
                     AppendAm($"{minuteWord} {pastMinutePlural} past {hourWord}")
                 );
+                // 12 minute(s) past 19 a.m.
                 currentTimePhrasesOneOf.AddRange(
                     AppendAm($"{minute} {pastMinutePlural} past {hour}")
                 );
 
-                // twelve minute(s) after nineteen
+                // twelve minute(s) after nineteen a.m.
                 currentTimePhrasesOneOf.AddRange(
                     AppendAm($"{minuteWord} {pastMinutePlural} after {hourWord}")
                 );
+                // 12 minute(s) after 19 a.m.
                 currentTimePhrasesOneOf.AddRange(
                     AppendAm($"{minute} {pastMinutePlural} after {hour}")
                 );
 
-                // twelve past nineteen
+                // twelve past nineteen a.m.
                 currentTimePhrasesOneOf.AddRange(AppendAm($"{minuteWord} past {hourWord}"));
+                // 12 past 19 a.m.
                 currentTimePhrasesOneOf.AddRange(AppendAm($"{minute} past {hour}"));
 
-                // twelve after nineteen
+                // twelve after nineteen a.m.
                 currentTimePhrasesOneOf.AddRange(AppendAm($"{minuteWord} after {hourWord}"));
+                // 12 after 19 a.m.
                 currentTimePhrasesOneOf.AddRange(AppendAm($"{minute} after {hour}"));
 
-                // twelve minute(s) to nineteen
+                // twelve minute(s) to nineteen a.m.
                 currentTimePhrasesOneOf.AddRange(
                     AppendAm($"{toMinuteWord} {toMinutePlural} to {toHourWord}")
                 );
-
+                // 12 minute(s) to 19 a.m.
                 currentTimePhrasesOneOf.AddRange(
                     AppendAm($"{toMinute} {toMinutePlural} to {toHour}")
                 );
+
+                // twelve to nineteen a.m.
+                currentTimePhrasesOneOf.AddRange(AppendAm($"{toMinuteWord} to {toHourWord}"));
+                // 12 to 19 a.m.
+                currentTimePhrasesOneOf.AddRange(AppendAm($"{toMinute} to {toHour}"));
 
                 switch (startOfDay.Minute)
                 {
@@ -414,40 +424,50 @@ public static class Phrases
                 var toHour = hour + 1;
                 var toHourWord = NumberToWord[toHour];
 
-                var toMinute = 60 - startOfDay.Minute;
+                var toMinute = 60 - minute;
                 var toMinuteWord = NumberToWord[toMinute];
 
-                // twelve minute(s) past nineteen
+                // twelve minute(s) past nineteen p.m.
                 currentTimePhrasesOneOf.AddRange(
                     AppendPm($"{minuteWord} {pastMinutePlural} past {hourWord}")
                 );
+                // 12 minute(s) past 19 p.m.
                 currentTimePhrasesOneOf.AddRange(
                     AppendPm($"{minute} {pastMinutePlural} past {hour}")
                 );
 
-                // twelve minute(s) after nineteen
+                // twelve minute(s) after nineteen p.m.
                 currentTimePhrasesOneOf.AddRange(
                     AppendPm($"{minuteWord} {pastMinutePlural} after {hourWord}")
                 );
+                // 12 minute(s) after 19 p.m.
                 currentTimePhrasesOneOf.AddRange(
                     AppendPm($"{minute} {pastMinutePlural} after {hour}")
                 );
 
-                // twelve past nineteen
+                // twelve past nineteen p.m.
                 currentTimePhrasesOneOf.AddRange(AppendPm($"{minuteWord} past {hourWord}"));
+                // 12 past 19 p.m.
                 currentTimePhrasesOneOf.AddRange(AppendPm($"{minute} past {hour}"));
 
-                // twelve after nineteen
+                // twelve after nineteen p.m.
                 currentTimePhrasesOneOf.AddRange(AppendPm($"{minuteWord} after {hourWord}"));
+                // 12 after 19 p.m.
                 currentTimePhrasesOneOf.AddRange(AppendPm($"{minute} after {hour}"));
 
-                // twelve minute(s) to nineteen
+                // twelve minute(s) to nineteen p.m.
                 currentTimePhrasesOneOf.AddRange(
                     AppendPm($"{toMinuteWord} {toMinutePlural} to {toHourWord}")
                 );
+                // 12 minute(s) to 19 p.m.
                 currentTimePhrasesOneOf.AddRange(
                     AppendPm($"{toMinute} {toMinutePlural} to {toHour}")
                 );
+
+                // twelve to nineteen p.m.
+                currentTimePhrasesOneOf.AddRange(AppendPm($"{toMinuteWord} to {toHourWord}"));
+                // 12 to 19 p.m.
+                currentTimePhrasesOneOf.AddRange(AppendPm($"{toMinute} to {toHour}"));
 
                 switch (startOfDay.Minute)
                 {
@@ -564,10 +584,6 @@ public static class Phrases
                     var hour = startOfDay.Hour > 12 ? startOfDay.Hour - 12 : startOfDay.Hour;
                     var hourWord = NumberToWord[hour];
 
-                    // currentTimePhrasesOneOf.AddRange(
-                    //     Combine(["At "], [hourWord, hour.ToString(CultureInfo.InvariantCulture)])
-                    // );
-
                     currentTimePhrasesOneOf.AddRange(
                         Combine(
                             ["At "],
@@ -599,7 +615,7 @@ public static class Phrases
                 var minute = startOfDay.Minute;
                 var minuteWord = NumberToWord[minute];
 
-                var toMinute = 60 - startOfDay.Minute;
+                var toMinute = 60 - minute;
                 var toMinuteWord = NumberToWord[toMinute];
 
                 currentTimePhrasesGenericOneOf.Add(
@@ -707,8 +723,50 @@ public static class Phrases
                 var hour = startOfDay.Hour;
                 var hourWord = NumberToWord[hour];
 
-                var toHour = startOfDay.Hour + 1;
+                var minute = startOfDay.Minute;
+                var minuteWord = NumberToWord[minute];
+
+                var toHour = hour + 1;
                 var toHourWord = NumberToWord[toHour];
+
+                var toMinute = 60 - minute;
+                var toMinuteWord = NumberToWord[toMinute];
+
+                currentTimePhrasesOneOf.AddRange(
+                    Combine(
+                        [$"{minuteWord}"],
+                        ["", $" {pastMinutePlural}"],
+                        [$" past {hourWord}", $" after {hourWord}"],
+                        [" in the morning", " in the morn", " that morning", " that morn"]
+                    )
+                );
+
+                currentTimePhrasesOneOf.AddRange(
+                    Combine(
+                        [$"{minute}"],
+                        ["", $" {pastMinutePlural}"],
+                        [$" past {hour}", $" after {hour}"],
+                        [" in the morning", " in the morn", " that morning", " that morn"]
+                    )
+                );
+
+                currentTimePhrasesOneOf.AddRange(
+                    Combine(
+                        [$"{toMinuteWord}"],
+                        ["", $" {toMinutePlural}"],
+                        [$" to {toHourWord}"],
+                        [" in the morning", " in the morn", " that morning", " that morn"]
+                    )
+                );
+
+                currentTimePhrasesOneOf.AddRange(
+                    Combine(
+                        [$"{toMinute}"],
+                        ["", $" {toMinutePlural}"],
+                        [$" to {toHour}"],
+                        [" in the morning", " in the morn", " that morning", " that morn"]
+                    )
+                );
 
                 switch (startOfDay.Minute)
                 {
@@ -841,8 +899,78 @@ public static class Phrases
                 var hour = startOfDay.Hour == 12 ? startOfDay.Hour : startOfDay.Hour - 12;
                 var hourWord = NumberToWord[hour];
 
+                var minute = startOfDay.Minute;
+                var minuteWord = NumberToWord[minute];
+
                 var toHour = hour + 1;
                 var toHourWord = NumberToWord[toHour];
+
+                var toMinute = 60 - minute;
+                var toMinuteWord = NumberToWord[toMinute];
+
+                currentTimePhrasesOneOf.AddRange(
+                    Combine(
+                        [$"{minuteWord}"],
+                        ["", $" {pastMinutePlural}"],
+                        [$" past {hourWord}", $" after {hourWord}"],
+                        [
+                            " in the afternoon",
+                            " that afternoon",
+                            " in the evening",
+                            " that evening",
+                            " at night",
+                            " that night"
+                        ]
+                    )
+                );
+
+                currentTimePhrasesOneOf.AddRange(
+                    Combine(
+                        [$"{minute}"],
+                        ["", $" {pastMinutePlural}"],
+                        [$" past {hour}", $" after {hour}"],
+                        [
+                            " in the afternoon",
+                            " that afternoon",
+                            " in the evening",
+                            " that evening",
+                            " at night",
+                            " that night"
+                        ]
+                    )
+                );
+
+                currentTimePhrasesOneOf.AddRange(
+                    Combine(
+                        [$"{toMinuteWord}"],
+                        ["", $" {toMinutePlural}"],
+                        [$" to {toHourWord}"],
+                        [
+                            " in the afternoon",
+                            " that afternoon",
+                            " in the evening",
+                            " that evening",
+                            " at night",
+                            " that night"
+                        ]
+                    )
+                );
+
+                currentTimePhrasesOneOf.AddRange(
+                    Combine(
+                        [$"{toMinute}"],
+                        ["", $" {toMinutePlural}"],
+                        [$" to {toHour}"],
+                        [
+                            " in the afternoon",
+                            " that afternoon",
+                            " in the evening",
+                            " that evening",
+                            " at night",
+                            " that night"
+                        ]
+                    )
+                );
 
                 switch (startOfDay.Minute)
                 {
