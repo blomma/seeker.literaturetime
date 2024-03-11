@@ -43,6 +43,13 @@ public static class Matcher
                     {
                         continue;
                     }
+
+                    // Phrase is five minutes past three
+                    // Sequence is matched on: twenty-five minutes past three
+                    if (beforeChar == '-')
+                    {
+                        continue;
+                    }
                 }
 
                 // The match is not the last thing on the line, so we check that
@@ -101,6 +108,13 @@ public static class Matcher
                     // Phrase is 2:12
                     // Sequence is matched on is 12:12
                     if (char.IsNumber(beforeChar))
+                    {
+                        continue;
+                    }
+
+                    // Phrase is five minutes past three
+                    // Sequence is matched on: twenty-five minutes past three
+                    if (beforeChar == '-')
                     {
                         continue;
                     }
