@@ -1,26 +1,23 @@
 using System.Collections.Concurrent;
 using System.Text;
+using seeker.literaturetime.models;
 
-namespace Seeker;
+namespace seeker.literaturetime;
 
 public record Match(int MatchType, Dictionary<string, string> Matches);
 
 public static class Matcher
 {
-    private static readonly char[] Digits = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
+    private static ReadOnlySpan<char> Digits => ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
     private const string Twenty = "twenty-";
     private const string Thirty = "thirty-";
     private const string Forty = "forty-";
     private const string Fifty = "fifty-";
 
-    public static bool IsBeforeCharValid(string line, string phrase)
+    public static bool IsBeforeCharValid(ReadOnlySpan<char> line, ReadOnlySpan<char> phrase)
     {
-        ReadOnlySpan<char> phraseSpan = phrase.AsSpan();
-        ReadOnlySpan<char> lineSpan = line.AsSpan();
-        ReadOnlySpan<char> digitsSpan = Digits.AsSpan();
-
-        var startIndex = lineSpan.IndexOf(phraseSpan, StringComparison.OrdinalIgnoreCase);
+        var startIndex = line.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
         if (startIndex == -1)
         {
             return false;
@@ -29,11 +26,11 @@ public static class Matcher
         // The match is not at the start of the line, so we check that
         if (startIndex > 0)
         {
-            var phraseFirst = phraseSpan[..1];
+            var phraseFirst = phrase[..1];
 
-            if (phraseFirst.ContainsAny(digitsSpan))
+            if (phraseFirst.ContainsAny(Digits))
             {
-                var beforeChar = lineSpan.Slice(startIndex - 1, 1);
+                var beforeChar = line.Slice(startIndex - 1, 1);
 
                 // Phrase is 12:12
                 // Sequence is matched on is 12:12:12
@@ -44,7 +41,7 @@ public static class Matcher
 
                 // Phrase is 2:12
                 // Sequence is matched on is 12:12
-                if (beforeChar.ContainsAny(digitsSpan))
+                if (beforeChar.ContainsAny(Digits))
                 {
                     return false;
                 }
@@ -54,7 +51,7 @@ public static class Matcher
             // Sequence is matched on: forty-five minutes past three
             if (startIndex >= 7)
             {
-                var beforeSpan = lineSpan.Slice(startIndex - 7, 7);
+                var beforeSpan = line.Slice(startIndex - 7, 7);
                 if (
                     beforeSpan.Equals(Twenty.AsSpan(), StringComparison.OrdinalIgnoreCase)
                     || beforeSpan.Equals(Thirty.AsSpan(), StringComparison.OrdinalIgnoreCase)
@@ -65,7 +62,7 @@ public static class Matcher
             }
             else if (startIndex >= 6)
             {
-                var beforeSpan = lineSpan.Slice(startIndex - 6, 6);
+                var beforeSpan = line.Slice(startIndex - 6, 6);
                 if (
                     beforeSpan.Equals(Forty.AsSpan(), StringComparison.OrdinalIgnoreCase)
                     || beforeSpan.Equals(Fifty.AsSpan(), StringComparison.OrdinalIgnoreCase)
@@ -79,22 +76,18 @@ public static class Matcher
         return true;
     }
 
-    public static bool IsAfterCharValid(string line, string phrase)
+    public static bool IsAfterCharValid(ReadOnlySpan<char> line, ReadOnlySpan<char> phrase)
     {
-        ReadOnlySpan<char> phraseSpan = phrase.AsSpan();
-        ReadOnlySpan<char> lineSpan = line.AsSpan();
-        ReadOnlySpan<char> digitsSpan = Digits.AsSpan();
-
-        var startIndex = lineSpan.IndexOf(phraseSpan, StringComparison.OrdinalIgnoreCase);
+        var startIndex = line.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
         var lastIndex = startIndex + phrase.Length - 1;
 
         // The match is not the last thing on the line, so we check that
-        if (lastIndex < (line.Length - 1))
+        if (lastIndex < line.Length - 1)
         {
-            var phraseLast = phraseSpan.Slice(phraseSpan.Length - 1, 1);
-            if (phraseLast.ContainsAny(digitsSpan))
+            var phraseLast = phrase.Slice(phrase.Length - 1, 1);
+            if (phraseLast.ContainsAny(Digits))
             {
-                var afterChar = lineSpan.Slice(lastIndex + 1, 1);
+                var afterChar = line.Slice(lastIndex + 1, 1);
 
                 // Phrase is 12:12
                 // Sequence is matched on is 12:12:12
@@ -105,7 +98,7 @@ public static class Matcher
 
                 // Phrase is 12:1
                 // Sequence is matched on is 12:12
-                if (afterChar.ContainsAny(digitsSpan))
+                if (afterChar.ContainsAny(Digits))
                 {
                     return false;
                 }
@@ -122,17 +115,20 @@ public static class Matcher
         string line
     )
     {
+        ReadOnlySpan<char> lineSpan = line.AsSpan();
+
         var matches = new Dictionary<string, string>();
+
         foreach (var timePhraseOneOf in timePhrasesOneOf)
         {
             foreach (var phrase in timePhraseOneOf.Value)
             {
-                if (!IsBeforeCharValid(line, phrase))
+                if (!IsBeforeCharValid(lineSpan, phrase))
                 {
                     continue;
                 }
 
-                if (!IsAfterCharValid(line, phrase))
+                if (!IsAfterCharValid(lineSpan, phrase))
                 {
                     continue;
                 }
@@ -152,12 +148,12 @@ public static class Matcher
         {
             foreach (var phrase in timePhraseOneOf.Value)
             {
-                if (!IsBeforeCharValid(line, phrase))
+                if (!IsBeforeCharValid(lineSpan, phrase))
                 {
                     continue;
                 }
 
-                if (!IsAfterCharValid(line, phrase))
+                if (!IsAfterCharValid(lineSpan, phrase))
                 {
                     continue;
                 }
@@ -177,12 +173,12 @@ public static class Matcher
         {
             foreach (var phrase in timePhraseOneOf.Value)
             {
-                if (!IsBeforeCharValid(line, phrase))
+                if (!IsBeforeCharValid(lineSpan, phrase))
                 {
                     continue;
                 }
 
-                if (!IsAfterCharValid(line, phrase))
+                if (!IsAfterCharValid(lineSpan, phrase))
                 {
                     continue;
                 }
@@ -196,7 +192,7 @@ public static class Matcher
         return new Match(2, matches);
     }
 
-    public static IEnumerable<LiteratureTime> GenerateQuotesFromMatches(
+    public static IEnumerable<LiteratureTimeEntry> GenerateQuotesFromMatches(
         ConcurrentDictionary<long, Match> matches,
         string[] lines,
         string title,
@@ -204,7 +200,7 @@ public static class Matcher
         string gutenbergReference
     )
     {
-        var literatureTimes = new List<LiteratureTime>();
+        var literatureTimes = new List<LiteratureTimeEntry>();
 
         foreach (var (index, value) in matches)
         {
@@ -275,7 +271,7 @@ public static class Matcher
                     if (dotIndex != -1)
                     {
                         noOfDotsTobeFound -= 1;
-                        if (noOfDotsTobeFound == 0 || (noOfDotsTobeFound == 1 && loopCount >= 4))
+                        if (noOfDotsTobeFound == 0 || noOfDotsTobeFound == 1 && loopCount >= 4)
                         {
                             currentLine = currentLine[(dotIndex + 1)..].Trim();
                             if (string.IsNullOrEmpty(currentLine))
@@ -392,7 +388,7 @@ public static class Matcher
                     if (dotIndex != -1 && endQuoteIndex != -1)
                     {
                         noOfDotsTobeFound -= 1;
-                        if (noOfDotsTobeFound == 0 || (noOfDotsTobeFound == 1 && loopCount >= 4))
+                        if (noOfDotsTobeFound == 0 || noOfDotsTobeFound == 1 && loopCount >= 4)
                         {
                             var endIndex = dotIndex < endQuoteIndex ? endQuoteIndex : dotIndex;
                             currentLine = currentLine[..(endIndex + 1)].Trim();
@@ -404,7 +400,7 @@ public static class Matcher
                     else if (dotIndex != -1 && string.IsNullOrEmpty(endQuote))
                     {
                         noOfDotsTobeFound -= 1;
-                        if (noOfDotsTobeFound == 0 || (noOfDotsTobeFound == 1 && loopCount >= 4))
+                        if (noOfDotsTobeFound == 0 || noOfDotsTobeFound == 1 && loopCount >= 4)
                         {
                             currentLine = currentLine[..(dotIndex + 1)].Trim();
                             quoteString.Append(currentLine);
@@ -423,7 +419,7 @@ public static class Matcher
 
             foreach (var m in value.Matches)
             {
-                var literatureTime = new LiteratureTime(
+                var literatureTime = new LiteratureTimeEntry(
                     m.Key,
                     m.Value,
                     result,

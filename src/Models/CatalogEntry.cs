@@ -1,6 +1,6 @@
 using CsvHelper.Configuration.Attributes;
 
-namespace Seeker;
+namespace seeker.literaturetime.models;
 
 // Text#,Type,Issued,Title,Language,Authors,Subjects,LoCC,Bookshelves
 

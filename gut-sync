@@ -2,9 +2,3 @@ rsync -rlvmz --delete --delete-excluded --include='*.txt' -f 'hide,! */' -f '- c
 
 rsync -rlvmz --include='*.csv' -f 'hide,! */' -f '- etext*/' aleph.gutenberg.org::gutenberg gutenberg
 
-
-rsync -rlvmz --delete --delete-excluded --include='*.txt' --include='*.rdf' --include='*.csv' -f 'hide,! */' -f '- etext*/' aleph.gutenberg.org::gutenberg gutenberg
-
-rsync -rlvmz --delete --delete-excluded  --include='*.txt' --include='*.csv' -f 'hide,! */' -f '- etext*/' aleph.gutenberg.org::gutenberg gutenberg
-
-rsync -rlvmz --delete --delete-excluded  --include='*.csv' -f 'hide,! */' -f '- etext*/' aleph.gutenberg.org::gutenberg gutenberg

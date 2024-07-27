@@ -1,6 +1,6 @@
-namespace Seeker;
+namespace seeker.literaturetime.models;
 
-public record LiteratureTime(
+public record LiteratureTimeEntry(
     string Time,
     string TimeQuote,
     string Quote,

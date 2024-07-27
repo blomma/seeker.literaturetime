@@ -4,7 +4,8 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using CsvHelper;
-using Seeker;
+using seeker.literaturetime;
+using seeker.literaturetime.models;
 
 var jsonSerializerOptions = new JsonSerializerOptions
 {
