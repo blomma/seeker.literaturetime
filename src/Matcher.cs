@@ -16,9 +16,12 @@ public static class Matcher
     private static ReadOnlySpan<char> Fifty => "fifty-";
     private static ReadOnlySpan<char> Colon => ":";
 
-    public static bool IsBeforeCharValid(ReadOnlySpan<char> line, ReadOnlySpan<char> phrase)
+    public static bool IsBeforeCharValid(
+        ReadOnlySpan<char> line,
+        ReadOnlySpan<char> phrase,
+        int startIndex
+    )
     {
-        var startIndex = line.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
         if (startIndex == -1)
         {
             return false;
@@ -77,9 +80,12 @@ public static class Matcher
         return true;
     }
 
-    public static bool IsAfterCharValid(ReadOnlySpan<char> line, ReadOnlySpan<char> phrase)
+    public static bool IsAfterCharValid(
+        ReadOnlySpan<char> line,
+        ReadOnlySpan<char> phrase,
+        int startIndex
+    )
     {
-        var startIndex = line.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
         var lastIndex = startIndex + phrase.Length - 1;
 
         // The match is not the last thing on the line, so we check that
@@ -124,12 +130,14 @@ public static class Matcher
         {
             foreach (var phrase in timePhraseOneOf.Value)
             {
-                if (!IsBeforeCharValid(lineSpan, phrase))
+                var startIndex = lineSpan.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
+
+                if (!IsBeforeCharValid(lineSpan, phrase, startIndex))
                 {
                     continue;
                 }
 
-                if (!IsAfterCharValid(lineSpan, phrase))
+                if (!IsAfterCharValid(lineSpan, phrase, startIndex))
                 {
                     continue;
                 }
@@ -149,12 +157,13 @@ public static class Matcher
         {
             foreach (var phrase in timePhraseOneOf.Value)
             {
-                if (!IsBeforeCharValid(lineSpan, phrase))
+                var startIndex = lineSpan.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
+                if (!IsBeforeCharValid(lineSpan, phrase, startIndex))
                 {
                     continue;
                 }
 
-                if (!IsAfterCharValid(lineSpan, phrase))
+                if (!IsAfterCharValid(lineSpan, phrase, startIndex))
                 {
                     continue;
                 }
@@ -174,12 +183,13 @@ public static class Matcher
         {
             foreach (var phrase in timePhraseOneOf.Value)
             {
-                if (!IsBeforeCharValid(lineSpan, phrase))
+                var startIndex = lineSpan.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
+                if (!IsBeforeCharValid(lineSpan, phrase, startIndex))
                 {
                     continue;
                 }
 
-                if (!IsAfterCharValid(lineSpan, phrase))
+                if (!IsAfterCharValid(lineSpan, phrase, startIndex))
                 {
                     continue;
                 }
