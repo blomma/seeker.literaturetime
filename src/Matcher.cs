@@ -126,9 +126,9 @@ public static class Matcher
 
         var matches = new Dictionary<string, string>();
 
-        foreach (var timePhraseOneOf in timePhrasesOneOf)
+        foreach (var phrases in timePhrasesOneOf)
         {
-            foreach (var phrase in timePhraseOneOf.Value)
+            foreach (var phrase in phrases.Value)
             {
                 var startIndex = lineSpan.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
 
@@ -142,7 +142,7 @@ public static class Matcher
                     continue;
                 }
 
-                matches.Add(timePhraseOneOf.Key, phrase);
+                matches.Add(phrases.Key, phrase);
 
                 break;
             }
@@ -153,9 +153,9 @@ public static class Matcher
             return new Match(0, matches);
         }
 
-        foreach (var timePhraseOneOf in timePhrasesGenericOneOf)
+        foreach (var phrases in timePhrasesGenericOneOf)
         {
-            foreach (var phrase in timePhraseOneOf.Value)
+            foreach (var phrase in phrases.Value)
             {
                 var startIndex = lineSpan.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
                 if (!IsBeforeCharValid(lineSpan, phrase, startIndex))
@@ -168,7 +168,7 @@ public static class Matcher
                     continue;
                 }
 
-                matches.Add(timePhraseOneOf.Key, phrase);
+                matches.Add(phrases.Key, phrase);
 
                 break;
             }
@@ -179,9 +179,9 @@ public static class Matcher
             return new Match(1, matches);
         }
 
-        foreach (var timePhraseOneOf in timePhrasesSuperGenericOneOf)
+        foreach (var phrases in timePhrasesSuperGenericOneOf)
         {
-            foreach (var phrase in timePhraseOneOf.Value)
+            foreach (var phrase in phrases.Value)
             {
                 var startIndex = lineSpan.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
                 if (!IsBeforeCharValid(lineSpan, phrase, startIndex))
@@ -194,7 +194,7 @@ public static class Matcher
                     continue;
                 }
 
-                matches.Add(timePhraseOneOf.Key, phrase);
+                matches.Add(phrases.Key, phrase);
 
                 break;
             }
