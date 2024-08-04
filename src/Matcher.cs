@@ -10,10 +10,11 @@ public static class Matcher
 {
     private static ReadOnlySpan<char> Digits => ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
-    private const string Twenty = "twenty-";
-    private const string Thirty = "thirty-";
-    private const string Forty = "forty-";
-    private const string Fifty = "fifty-";
+    private static ReadOnlySpan<char> Twenty => "twenty-";
+    private static ReadOnlySpan<char> Thirty => "thirty-";
+    private static ReadOnlySpan<char> Forty => "forty-";
+    private static ReadOnlySpan<char> Fifty => "fifty-";
+    private static ReadOnlySpan<char> Colon => ":";
 
     public static bool IsBeforeCharValid(ReadOnlySpan<char> line, ReadOnlySpan<char> phrase)
     {
@@ -34,7 +35,7 @@ public static class Matcher
 
                 // Phrase is 12:12
                 // Sequence is matched on is 12:12:12
-                if (beforeChar.Equals(":".AsSpan(), StringComparison.OrdinalIgnoreCase))
+                if (beforeChar.Equals(Colon, StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
                 }
@@ -53,8 +54,8 @@ public static class Matcher
             {
                 var beforeSpan = line.Slice(startIndex - 7, 7);
                 if (
-                    beforeSpan.Equals(Twenty.AsSpan(), StringComparison.OrdinalIgnoreCase)
-                    || beforeSpan.Equals(Thirty.AsSpan(), StringComparison.OrdinalIgnoreCase)
+                    beforeSpan.Equals(Twenty, StringComparison.OrdinalIgnoreCase)
+                    || beforeSpan.Equals(Thirty, StringComparison.OrdinalIgnoreCase)
                 )
                 {
                     return false;
@@ -64,8 +65,8 @@ public static class Matcher
             {
                 var beforeSpan = line.Slice(startIndex - 6, 6);
                 if (
-                    beforeSpan.Equals(Forty.AsSpan(), StringComparison.OrdinalIgnoreCase)
-                    || beforeSpan.Equals(Fifty.AsSpan(), StringComparison.OrdinalIgnoreCase)
+                    beforeSpan.Equals(Forty, StringComparison.OrdinalIgnoreCase)
+                    || beforeSpan.Equals(Fifty, StringComparison.OrdinalIgnoreCase)
                 )
                 {
                     return false;
@@ -91,7 +92,7 @@ public static class Matcher
 
                 // Phrase is 12:12
                 // Sequence is matched on is 12:12:12
-                if (afterChar.Equals(":".AsSpan(), StringComparison.OrdinalIgnoreCase))
+                if (afterChar.Equals(Colon, StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
                 }
