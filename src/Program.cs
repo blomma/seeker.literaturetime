@@ -123,8 +123,8 @@ Console.CancelKeyPress += (s, e) =>
 try
 {
     var totalFiles = files.Count;
-    var processedFiles = 0;
-    var excludedFiles = 0;
+    var processedFiles = fileDirectoryDone.Count;
+    var excludedFiles = fileDirectoryExcluded.Count;
 
     foreach (var file in files)
     {
@@ -213,7 +213,9 @@ try
             continue;
         }
 
-        Console.WriteLine($"{fileToRead} - {processedFiles}:{totalFiles}");
+        Console.WriteLine(
+            $"{fileToRead} - {excludedFiles}:{processedFiles}:{totalFiles}:{match.Subjects}"
+        );
 
         var lines = File.ReadAllLines(fileToRead, encoding);
 
@@ -262,8 +264,6 @@ try
 
         fileDirectoryDone.Add(fileDirectory);
     }
-
-    Console.WriteLine($"{excludedFiles} - {processedFiles}:{totalFiles}");
 }
 finally
 {
