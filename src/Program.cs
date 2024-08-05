@@ -97,6 +97,10 @@ List<string> subjectExlusions =
     "Sermon",
     "Sermons",
     "Worship",
+    "World politics -- Handbooks, manuals, etc.",
+    "Geography -- Handbooks, manuals, etc.",
+    "Political science -- Handbooks, manuals, etc.",
+    "Political statistics -- Handbooks, manuals, etc."
 ];
 
 List<string> fileDirectoryDone = [];
