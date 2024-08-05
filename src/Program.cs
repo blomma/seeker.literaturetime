@@ -254,7 +254,7 @@ try
             }
         );
 
-        var subjects = match.Subjects.Split(";");
+        var subjects = match.Subjects.Split(";").Select(s => s.Trim());
         foreach (var subject in subjects)
         {
             if (subjectHistogram.TryGetValue(subject, out SubjectHistogramEntry? value))
