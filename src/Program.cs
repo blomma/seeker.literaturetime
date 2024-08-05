@@ -20,6 +20,8 @@ const string gutPath = "/Users/blomma/Downloads/gutenberg";
 Directory.CreateDirectory(outputDirectory);
 
 var files = Directory.EnumerateFiles(gutPath, "*.txt", SearchOption.AllDirectories).ToList();
+files = [.. files.OrderByDescending(s => s.Length)];
+
 var (timePhrasesOneOf, timePhrasesGenericOneOf, timePhrasesSuperGenericOneOf) =
     Phrases.GeneratePhrases();
 
