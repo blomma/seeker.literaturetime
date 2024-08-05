@@ -98,16 +98,12 @@ List<string> subjectExlusions =
 ];
 
 List<string> fileDirectoryDone = [];
+List<string> fileDirectoryExcluded = [];
 
-var lastSeekTime = DateTime.UnixEpoch;
 if (File.Exists($"{outputDirectory}/fileDirectoryDone.json"))
 {
     var content = File.ReadAllText($"{outputDirectory}/fileDirectoryDone.json");
     fileDirectoryDone = JsonSerializer.Deserialize<List<string>>(content) ?? [];
-
-    content = File.ReadAllText($"{outputDirectory}/lastSeekTime");
-    var unixTimeSeconds = long.Parse(content, CultureInfo.InvariantCulture);
-    lastSeekTime = DateTimeOffset.FromUnixTimeSeconds(unixTimeSeconds).LocalDateTime;
 }
 
 Console.CancelKeyPress += (s, e) =>
@@ -115,10 +111,11 @@ Console.CancelKeyPress += (s, e) =>
     var fileDirectoryDoneJson = JsonSerializer.Serialize(fileDirectoryDone, jsonSerializerOptions);
     File.WriteAllText($"{outputDirectory}/fileDirectoryDone.json", fileDirectoryDoneJson);
 
-    File.WriteAllText(
-        $"{outputDirectory}/lastSeekTime",
-        DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture)
+    var fileDirectoryExcludedJson = JsonSerializer.Serialize(
+        fileDirectoryExcluded,
+        jsonSerializerOptions
     );
+    File.WriteAllText($"{outputDirectory}/fileDirectoryExcluded.json", fileDirectoryExcludedJson);
 };
 
 try
@@ -137,13 +134,16 @@ try
         if (fileDirectory == null)
         {
             excludedFiles += 1;
+
             continue;
         }
 
         fileDirectory = fileDirectory.ToLowerInvariant();
         if (fileDirectory == "old")
         {
+            fileDirectoryExcluded.Add(fileDirectory);
             excludedFiles += 1;
+
             continue;
         }
 
@@ -173,7 +173,9 @@ try
 
         if (!File.Exists(fileToRead))
         {
+            fileDirectoryExcluded.Add(fileDirectory);
             excludedFiles += 1;
+
             continue;
         }
 
@@ -183,7 +185,9 @@ try
 
         if (match == null)
         {
+            fileDirectoryExcluded.Add(fileDirectory);
             excludedFiles += 1;
+
             continue;
         }
 
@@ -193,13 +197,17 @@ try
 
         if (subjectExclusionFound)
         {
+            fileDirectoryExcluded.Add(fileDirectory);
             excludedFiles += 1;
+
             continue;
         }
 
         if (!match.Language.Equals("en", StringComparison.OrdinalIgnoreCase))
         {
+            fileDirectoryExcluded.Add(fileDirectory);
             excludedFiles += 1;
+
             continue;
         }
 
@@ -260,8 +268,9 @@ finally
     var fileDirectoryDoneJson = JsonSerializer.Serialize(fileDirectoryDone, jsonSerializerOptions);
     File.WriteAllText($"{outputDirectory}/fileDirectoryDone.json", fileDirectoryDoneJson);
 
-    File.WriteAllText(
-        $"{outputDirectory}/lastSeekTime",
-        DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture)
+    var fileDirectoryExcludedJson = JsonSerializer.Serialize(
+        fileDirectoryExcluded,
+        jsonSerializerOptions
     );
+    File.WriteAllText($"{outputDirectory}/fileDirectoryExcluded.json", fileDirectoryExcludedJson);
 }
