@@ -105,11 +105,19 @@ List<string> subjectExlusions =
 
 List<string> fileDirectoryDone = [];
 List<string> fileDirectoryExcluded = [];
+Dictionary<string, SubjectHistogramEntry> subjectHistogram = [];
 
 if (File.Exists($"{outputDirectory}/fileDirectoryDone.json"))
 {
     var content = File.ReadAllText($"{outputDirectory}/fileDirectoryDone.json");
     fileDirectoryDone = JsonSerializer.Deserialize<List<string>>(content) ?? [];
+}
+
+if (File.Exists($"{outputDirectory}/subjectHistogram.json"))
+{
+    var content = File.ReadAllText($"{outputDirectory}/subjectHistogram.json");
+    subjectHistogram =
+        JsonSerializer.Deserialize<Dictionary<string, SubjectHistogramEntry>>(content) ?? [];
 }
 
 Console.CancelKeyPress += (s, e) =>
@@ -122,6 +130,9 @@ Console.CancelKeyPress += (s, e) =>
         jsonSerializerOptions
     );
     File.WriteAllText($"{outputDirectory}/fileDirectoryExcluded.json", fileDirectoryExcludedJson);
+
+    var subjectHistogramJson = JsonSerializer.Serialize(subjectHistogram, jsonSerializerOptions);
+    File.WriteAllText($"{outputDirectory}/subjectHistogram.json", subjectHistogramJson);
 };
 
 try
@@ -243,6 +254,25 @@ try
             }
         );
 
+        var subjects = match.Subjects.Split(";");
+        foreach (var subject in subjects)
+        {
+            if (subjectHistogram.TryGetValue(subject, out SubjectHistogramEntry? value))
+            {
+                value.Count++;
+                value.Matches += matches.Count;
+            }
+            else
+            {
+                subjectHistogram[subject] = new SubjectHistogramEntry
+                {
+                    Subject = subject,
+                    Count = 1,
+                    Matches = matches.Count
+                };
+            }
+        }
+
         var literatureTimesFromMatches = Matcher.GenerateQuotesFromMatches(
             matches,
             lines,
@@ -279,4 +309,7 @@ finally
         jsonSerializerOptions
     );
     File.WriteAllText($"{outputDirectory}/fileDirectoryExcluded.json", fileDirectoryExcludedJson);
+
+    var subjectHistogramJson = JsonSerializer.Serialize(subjectHistogram, jsonSerializerOptions);
+    File.WriteAllText($"{outputDirectory}/subjectHistogram.json", subjectHistogramJson);
 }
