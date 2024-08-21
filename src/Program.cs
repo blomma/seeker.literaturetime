@@ -138,20 +138,14 @@ Console.CancelKeyPress += (s, e) =>
 try
 {
     var totalFiles = files.Count;
-    var processedFiles = fileDirectoryDone.Count;
-    var excludedFiles = fileDirectoryExcluded.Count;
 
     foreach (var file in files)
     {
-        processedFiles += 1;
-
         var filePath = Path.GetDirectoryName(file);
 
         var fileDirectory = filePath?.Split(Path.DirectorySeparatorChar).LastOrDefault();
         if (fileDirectory == null)
         {
-            excludedFiles += 1;
-
             continue;
         }
 
@@ -159,7 +153,6 @@ try
         if (fileDirectory == "old")
         {
             fileDirectoryExcluded.Add(fileDirectory);
-            excludedFiles += 1;
 
             continue;
         }
@@ -191,7 +184,6 @@ try
         if (!File.Exists(fileToRead))
         {
             fileDirectoryExcluded.Add(fileDirectory);
-            excludedFiles += 1;
 
             continue;
         }
@@ -203,7 +195,6 @@ try
         if (match == null)
         {
             fileDirectoryExcluded.Add(fileDirectory);
-            excludedFiles += 1;
 
             continue;
         }
@@ -215,7 +206,6 @@ try
         if (subjectExclusionFound)
         {
             fileDirectoryExcluded.Add(fileDirectory);
-            excludedFiles += 1;
 
             continue;
         }
@@ -223,13 +213,12 @@ try
         if (!match.Language.Equals("en", StringComparison.OrdinalIgnoreCase))
         {
             fileDirectoryExcluded.Add(fileDirectory);
-            excludedFiles += 1;
 
             continue;
         }
 
         Console.WriteLine(
-            $"{fileToRead} - {excludedFiles}:{processedFiles}:{totalFiles}:{match.Subjects}"
+            $"{fileToRead} - {fileDirectoryExcluded.Count}:{fileDirectoryDone.Count}:{totalFiles}:{match.Subjects}"
         );
 
         var lines = File.ReadAllLines(fileToRead, encoding);

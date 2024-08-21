@@ -10,7 +10,8 @@ public class MatcherTest
         var phrase = "12:12";
         var line = "13:12:12";
 
-        var result = Matcher.IsBeforeCharValid(line, phrase);
+        var startIndex = line.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
+        var result = Matcher.IsBeforeCharValid(line, phrase, startIndex);
 
         Assert.False(result);
     }
@@ -21,7 +22,8 @@ public class MatcherTest
         var phrase = "12:12";
         var line = "12:12:12";
 
-        var result = Matcher.IsAfterCharValid(line, phrase);
+        var startIndex = line.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
+        var result = Matcher.IsAfterCharValid(line, phrase, startIndex);
 
         Assert.False(result);
     }
@@ -32,7 +34,8 @@ public class MatcherTest
         var phrase = "12:12";
         var line = "Squint 12:12";
 
-        var result = Matcher.IsBeforeCharValid(line, phrase);
+        var startIndex = line.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
+        var result = Matcher.IsBeforeCharValid(line, phrase, startIndex);
 
         Assert.True(result);
     }
@@ -43,7 +46,8 @@ public class MatcherTest
         var phrase = "12:12";
         var line = "12:12 squint";
 
-        var result = Matcher.IsAfterCharValid(line, phrase);
+        var startIndex = line.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
+        var result = Matcher.IsAfterCharValid(line, phrase, startIndex);
 
         Assert.True(result);
     }
@@ -54,7 +58,8 @@ public class MatcherTest
         var phrase = "2:12";
         var line = "12:12:12";
 
-        var result = Matcher.IsBeforeCharValid(line, phrase);
+        var startIndex = line.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
+        var result = Matcher.IsBeforeCharValid(line, phrase, startIndex);
 
         Assert.False(result);
     }
@@ -65,7 +70,8 @@ public class MatcherTest
         var phrase = "12:1";
         var line = "12:12:12";
 
-        var result = Matcher.IsAfterCharValid(line, phrase);
+        var startIndex = line.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
+        var result = Matcher.IsAfterCharValid(line, phrase, startIndex);
 
         Assert.False(result);
     }
@@ -76,7 +82,8 @@ public class MatcherTest
         var phrase = "2:12";
         var line = "as 2:12";
 
-        var result = Matcher.IsBeforeCharValid(line, phrase);
+        var startIndex = line.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
+        var result = Matcher.IsBeforeCharValid(line, phrase, startIndex);
 
         Assert.True(result);
     }
@@ -87,7 +94,8 @@ public class MatcherTest
         var phrase = "2:12";
         var line = "2:12 as";
 
-        var result = Matcher.IsAfterCharValid(line, phrase);
+        var startIndex = line.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
+        var result = Matcher.IsAfterCharValid(line, phrase, startIndex);
 
         Assert.True(result);
     }
@@ -98,7 +106,8 @@ public class MatcherTest
         var phrase = "five minutes past three";
         var line = "twenty-five minutes past three";
 
-        var result = Matcher.IsBeforeCharValid(line, phrase);
+        var startIndex = line.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
+        var result = Matcher.IsBeforeCharValid(line, phrase, startIndex);
 
         Assert.False(result);
     }
@@ -108,7 +117,8 @@ public class MatcherTest
     [InlineData("ten minutes past three", "abacu ten minutes past three")]
     public void IsBeforeCharValidTest3_ShouldBeTrue(string phrase, string line)
     {
-        var result = Matcher.IsBeforeCharValid(line, phrase);
+        var startIndex = line.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
+        var result = Matcher.IsBeforeCharValid(line, phrase, startIndex);
 
         Assert.True(result);
     }
