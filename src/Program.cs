@@ -200,6 +200,10 @@ try
             matchCount = 0;
         }
     }
+
+    Console.WriteLine(
+        $"DONE - {fileDirectoryExcluded.Count}:{fileDirectoryDone.Count}:{totalFiles}"
+    );
 }
 finally
 {
