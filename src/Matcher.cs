@@ -269,7 +269,7 @@ public static class Matcher
                         {
                             "m" when pp == "." => true,
                             "d" when pp == "n" => true,
-                            _ => patternFound
+                            _ => patternFound,
                         };
                     }
 
@@ -305,7 +305,7 @@ public static class Matcher
                             {
                                 '“' => "”",
                                 '"' => "\"",
-                                _ => endQuote
+                                _ => endQuote,
                             };
 
                             beforeLines.Add(currentLine);
@@ -383,7 +383,7 @@ public static class Matcher
                         patternFound = p switch
                         {
                             "m" when pp == "." => true,
-                            _ => patternFound
+                            _ => patternFound,
                         };
                     }
 

@@ -292,7 +292,7 @@ public static class Phrases
                                     "quarter past ",
                                     "quarter-past ",
                                     "quarter after ",
-                                    "quarter-after "
+                                    "quarter-after ",
                                 ],
                                 [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
                                 Am
@@ -305,7 +305,7 @@ public static class Phrases
                                     "quarter past ",
                                     "quarter-past ",
                                     "quarter after ",
-                                    "quarter-after "
+                                    "quarter-after ",
                                 ],
                                 [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
                                 [" o'clock", " o’clock"],
@@ -497,7 +497,7 @@ public static class Phrases
                                     "quarter past ",
                                     "quarter-past ",
                                     "quarter after ",
-                                    "quarter-after "
+                                    "quarter-after ",
                                 ],
                                 [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
                                 Pm
@@ -510,7 +510,7 @@ public static class Phrases
                                     "quarter past ",
                                     "quarter-past ",
                                     "quarter after ",
-                                    "quarter-after "
+                                    "quarter-after ",
                                 ],
                                 [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
                                 [" o'clock", " o’clock"],
@@ -652,7 +652,7 @@ public static class Phrases
                                     "quarter past ",
                                     "quarter-past ",
                                     "quarter after ",
-                                    "quarter-after "
+                                    "quarter-after ",
                                 ],
                                 [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
                                 [" o'clock", " o’clock"]
@@ -665,7 +665,7 @@ public static class Phrases
                                     "quarter past ",
                                     "quarter-past ",
                                     "quarter after ",
-                                    "quarter-after "
+                                    "quarter-after ",
                                 ],
                                 [hourWord, hour.ToString(CultureInfo.InvariantCulture)]
                             )
@@ -913,7 +913,7 @@ public static class Phrases
                         [$"{minuteWord}"],
                         ["", $" {pastMinutePlural}"],
                         [$" past {hourWord}", $" after {hourWord}"],
-                        [" in the afternoon", " that afternoon",]
+                        [" in the afternoon", " that afternoon"]
                     )
                 );
 
@@ -922,7 +922,7 @@ public static class Phrases
                         [$"{minute}"],
                         ["", $" {pastMinutePlural}"],
                         [$" past {hour}", $" after {hour}"],
-                        [" in the afternoon", " that afternoon",]
+                        [" in the afternoon", " that afternoon"]
                     )
                 );
 
@@ -931,7 +931,7 @@ public static class Phrases
                         [$"{toMinuteWord}"],
                         ["", $" {toMinutePlural}"],
                         [$" to {toHourWord}"],
-                        [" in the afternoon", " that afternoon",]
+                        [" in the afternoon", " that afternoon"]
                     )
                 );
 
@@ -940,7 +940,7 @@ public static class Phrases
                         [$"{toMinute}"],
                         ["", $" {toMinutePlural}"],
                         [$" to {toHour}"],
-                        [" in the afternoon", " that afternoon",]
+                        [" in the afternoon", " that afternoon"]
                     )
                 );
 
@@ -951,7 +951,7 @@ public static class Phrases
                             Combine(
                                 ALittleAfter,
                                 [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
-                                [" in the afternoon", " that afternoon",]
+                                [" in the afternoon", " that afternoon"]
                             )
                         );
 
@@ -960,7 +960,7 @@ public static class Phrases
                                 ALittleAfter,
                                 [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
                                 [" o'clock", " o’clock"],
-                                [" in the afternoon", " that afternoon",]
+                                [" in the afternoon", " that afternoon"]
                             )
                         );
 
@@ -970,7 +970,7 @@ public static class Phrases
                             Combine(
                                 ["quarter past ", "quarter-past "],
                                 [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
-                                [" in the afternoon", " that afternoon",]
+                                [" in the afternoon", " that afternoon"]
                             )
                         );
 
@@ -979,7 +979,7 @@ public static class Phrases
                                 ["quarter past ", "quarter-past "],
                                 [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
                                 [" o'clock", " o’clock"],
-                                [" in the afternoon", " that afternoon",]
+                                [" in the afternoon", " that afternoon"]
                             )
                         );
 
@@ -989,7 +989,7 @@ public static class Phrases
                             Combine(
                                 ["half past ", "half-past "],
                                 [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
-                                [" in the afternoon", " that afternoon",]
+                                [" in the afternoon", " that afternoon"]
                             )
                         );
 
@@ -998,7 +998,7 @@ public static class Phrases
                                 ["half past ", "half-past "],
                                 [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
                                 [" o'clock", " o’clock"],
-                                [" in the afternoon", " that afternoon",]
+                                [" in the afternoon", " that afternoon"]
                             )
                         );
 
@@ -1008,7 +1008,7 @@ public static class Phrases
                             Combine(
                                 ["quarter to ", "quarter-to "],
                                 [toHourWord, toHour.ToString(CultureInfo.InvariantCulture)],
-                                [" in the afternoon", " that afternoon",]
+                                [" in the afternoon", " that afternoon"]
                             )
                         );
 
@@ -1017,7 +1017,7 @@ public static class Phrases
                                 ["quarter to ", "quarter-to "],
                                 [toHourWord, toHour.ToString(CultureInfo.InvariantCulture)],
                                 [" o'clock", " o’clock"],
-                                [" in the afternoon", " that afternoon",]
+                                [" in the afternoon", " that afternoon"]
                             )
                         );
 
@@ -1028,7 +1028,7 @@ public static class Phrases
                             Combine(
                                 AlmostAt,
                                 [toHourWord, toHour.ToString(CultureInfo.InvariantCulture)],
-                                [" in the afternoon", " that afternoon",]
+                                [" in the afternoon", " that afternoon"]
                             )
                         );
 
@@ -1037,7 +1037,7 @@ public static class Phrases
                                 AlmostAt,
                                 [toHourWord, toHour.ToString(CultureInfo.InvariantCulture)],
                                 [" o'clock", " o’clock"],
-                                [" in the afternoon", " that afternoon",]
+                                [" in the afternoon", " that afternoon"]
                             )
                         );
 
@@ -1053,7 +1053,7 @@ public static class Phrases
                 currentTimePhrasesOneOf.AddRange(
                     Combine(
                         [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
-                        [" in the afternoon", " that afternoon",]
+                        [" in the afternoon", " that afternoon"]
                     )
                 );
 
@@ -1061,7 +1061,7 @@ public static class Phrases
                     Combine(
                         [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
                         [" o'clock", " o’clock"],
-                        [" in the afternoon", " that afternoon",]
+                        [" in the afternoon", " that afternoon"]
                     )
                 );
             }
@@ -1085,7 +1085,7 @@ public static class Phrases
                         [$"{minuteWord}"],
                         ["", $" {pastMinutePlural}"],
                         [$" past {hourWord}", $" after {hourWord}"],
-                        [" in the evening", " that evening",]
+                        [" in the evening", " that evening"]
                     )
                 );
 
@@ -1094,7 +1094,7 @@ public static class Phrases
                         [$"{minute}"],
                         ["", $" {pastMinutePlural}"],
                         [$" past {hour}", $" after {hour}"],
-                        [" in the evening", " that evening",]
+                        [" in the evening", " that evening"]
                     )
                 );
 
@@ -1103,7 +1103,7 @@ public static class Phrases
                         [$"{toMinuteWord}"],
                         ["", $" {toMinutePlural}"],
                         [$" to {toHourWord}"],
-                        [" in the evening", " that evening",]
+                        [" in the evening", " that evening"]
                     )
                 );
 
@@ -1112,7 +1112,7 @@ public static class Phrases
                         [$"{toMinute}"],
                         ["", $" {toMinutePlural}"],
                         [$" to {toHour}"],
-                        [" in the evening", " that evening",]
+                        [" in the evening", " that evening"]
                     )
                 );
 
@@ -1123,7 +1123,7 @@ public static class Phrases
                             Combine(
                                 ALittleAfter,
                                 [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
-                                [" in the evening", " that evening",]
+                                [" in the evening", " that evening"]
                             )
                         );
 
@@ -1132,7 +1132,7 @@ public static class Phrases
                                 ALittleAfter,
                                 [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
                                 [" o'clock", " o’clock"],
-                                [" in the evening", " that evening",]
+                                [" in the evening", " that evening"]
                             )
                         );
 
@@ -1142,7 +1142,7 @@ public static class Phrases
                             Combine(
                                 ["quarter past ", "quarter-past "],
                                 [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
-                                [" in the evening", " that evening",]
+                                [" in the evening", " that evening"]
                             )
                         );
 
@@ -1151,7 +1151,7 @@ public static class Phrases
                                 ["quarter past ", "quarter-past "],
                                 [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
                                 [" o'clock", " o’clock"],
-                                [" in the evening", " that evening",]
+                                [" in the evening", " that evening"]
                             )
                         );
 
@@ -1161,7 +1161,7 @@ public static class Phrases
                             Combine(
                                 ["half past ", "half-past "],
                                 [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
-                                [" in the evening", " that evening",]
+                                [" in the evening", " that evening"]
                             )
                         );
 
@@ -1170,7 +1170,7 @@ public static class Phrases
                                 ["half past ", "half-past "],
                                 [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
                                 [" o'clock", " o’clock"],
-                                [" in the evening", " that evening",]
+                                [" in the evening", " that evening"]
                             )
                         );
 
@@ -1180,7 +1180,7 @@ public static class Phrases
                             Combine(
                                 ["quarter to ", "quarter-to "],
                                 [toHourWord, toHour.ToString(CultureInfo.InvariantCulture)],
-                                [" in the evening", " that evening",]
+                                [" in the evening", " that evening"]
                             )
                         );
 
@@ -1189,7 +1189,7 @@ public static class Phrases
                                 ["quarter to ", "quarter-to "],
                                 [toHourWord, toHour.ToString(CultureInfo.InvariantCulture)],
                                 [" o'clock", " o’clock"],
-                                [" in the evening", " that evening",]
+                                [" in the evening", " that evening"]
                             )
                         );
 
@@ -1200,7 +1200,7 @@ public static class Phrases
                             Combine(
                                 AlmostAt,
                                 [toHourWord, toHour.ToString(CultureInfo.InvariantCulture)],
-                                [" in the evening", " that evening",]
+                                [" in the evening", " that evening"]
                             )
                         );
 
@@ -1209,7 +1209,7 @@ public static class Phrases
                                 AlmostAt,
                                 [toHourWord, toHour.ToString(CultureInfo.InvariantCulture)],
                                 [" o'clock", " o’clock"],
-                                [" in the evening", " that evening",]
+                                [" in the evening", " that evening"]
                             )
                         );
 
@@ -1225,7 +1225,7 @@ public static class Phrases
                 currentTimePhrasesOneOf.AddRange(
                     Combine(
                         [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
-                        [" in the evening", " that evening",]
+                        [" in the evening", " that evening"]
                     )
                 );
 
@@ -1233,7 +1233,7 @@ public static class Phrases
                     Combine(
                         [hourWord, hour.ToString(CultureInfo.InvariantCulture)],
                         [" o'clock", " o’clock"],
-                        [" in the evening", " that evening",]
+                        [" in the evening", " that evening"]
                     )
                 );
             }
@@ -1544,13 +1544,13 @@ public static class Phrases
 
             currentTimePhrasesGenericOneOf =
             [
-                .. currentTimePhrasesGenericOneOf.OrderByDescending(s => s.Length)
+                .. currentTimePhrasesGenericOneOf.OrderByDescending(s => s.Length),
             ];
             timePhrasesGenericOneOf.TryAdd(key, currentTimePhrasesGenericOneOf);
 
             currentTimePhrasesSuperGenericOneOf =
             [
-                .. currentTimePhrasesSuperGenericOneOf.OrderByDescending(s => s.Length)
+                .. currentTimePhrasesSuperGenericOneOf.OrderByDescending(s => s.Length),
             ];
             timePhrasesSuperGenericOneOf.TryAdd(key, currentTimePhrasesSuperGenericOneOf);
 
