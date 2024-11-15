@@ -1,6 +1,4 @@
-using seeker.literaturetime;
-
-namespace Seeker.Tests;
+namespace seeker.literaturetime.tests;
 
 public class MatcherTest
 {

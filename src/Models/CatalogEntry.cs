@@ -4,7 +4,8 @@ namespace seeker.literaturetime.models;
 
 // Text#,Type,Issued,Title,Language,Authors,Subjects,LoCC,Bookshelves
 
-public class CatalogEntry
+#pragma warning disable CA1812
+internal sealed class CatalogEntry
 {
     [Name("Text#")]
     public string GutenbergReference { get; set; } = string.Empty;
@@ -33,3 +34,4 @@ public class CatalogEntry
     [Name("Bookshelves")]
     public string Bookshelves { get; set; } = string.Empty;
 }
+#pragma warning restore CA1812

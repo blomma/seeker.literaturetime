@@ -4,7 +4,7 @@ using seeker.literaturetime.models;
 
 namespace seeker.literaturetime;
 
-public static class Data
+internal static class Data
 {
     public static readonly List<string> SubjectExlusions =
     [

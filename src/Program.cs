@@ -6,9 +6,8 @@ using CsvHelper;
 using seeker.literaturetime;
 using seeker.literaturetime.models;
 
-const string outputDirectory = "../quotes.literaturetime.temp";
-
-const string gutPath = "/Users/blomma/Downloads/gutenberg";
+const string outputDirectory = "../quotes.literaturetime";
+const string gutPath = "../gutenberg";
 
 Directory.CreateDirectory(outputDirectory);
 
@@ -27,7 +26,7 @@ Data.PersistPhrases(
 
 var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 3 };
 
-var pgCatalogPath = $"{gutPath}/cache/epub/feeds/pg_catalog.csv";
+const string pgCatalogPath = $"{gutPath}/cache/epub/feeds/pg_catalog.csv";
 List<CatalogEntry> catalogEntries = [];
 using (var reader = new StreamReader(pgCatalogPath))
 using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
@@ -153,7 +152,7 @@ try
             }
         );
 
-        var subjects = match.Subjects.Split(";").Select(s => s.Trim());
+        var subjects = match.Subjects.Split(";").Select(s => s.Trim()).ToList();
         foreach (var subject in subjects)
         {
             if (subjectHistogram.TryGetValue(subject, out SubjectHistogramEntry? value))
@@ -173,7 +172,13 @@ try
         }
 
         var literatureTimesFromMatches = Matcher
-            .GenerateQuotesFromMatches(matches, lines, match.Title, match.Authors, fileDirectory)
+            .GenerateQuotesFromMatches(
+                matches,
+                lines,
+                match.Title,
+                match.Authors,
+                fileDirectory
+            )
             .ToList();
 
         var lookup = literatureTimesFromMatches.ToLookup(t => t.Time);

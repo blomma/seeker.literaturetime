@@ -1,14 +1,18 @@
+using System.Buffers;
 using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
 using System.Text;
 using seeker.literaturetime.models;
 
+[assembly: InternalsVisibleTo("seeker.literaturetime.tests")]
+
 namespace seeker.literaturetime;
 
-public record Match(int MatchType, Dictionary<string, string> Matches);
+internal sealed record Match(int MatchType, Dictionary<string, string> Matches);
 
-public static class Matcher
+internal static class Matcher
 {
-    private static ReadOnlySpan<char> Digits => ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
+    private static readonly SearchValues<char> Digits = SearchValues.Create("123456789");
 
     private static ReadOnlySpan<char> Twenty => "twenty-";
     private static ReadOnlySpan<char> Thirty => "thirty-";
@@ -218,26 +222,26 @@ public static class Matcher
             var quoteString = new StringBuilder();
 
             var matchLine = lines[index].Trim();
+            var matchLineFirst = matchLine[0];
 
             var endQuote = "";
-            if (matchLine[0] == '“')
+            if (matchLineFirst == '“')
             {
                 endQuote = "”";
             }
-            if (matchLine[0] == '"')
+            if (matchLineFirst == '"')
             {
                 endQuote = "\"";
             }
 
-            if (!IsUpperCase(matchLine[0]) && string.IsNullOrEmpty(endQuote))
+            if (!char.IsUpper(matchLineFirst) && string.IsNullOrEmpty(endQuote))
             {
                 var beforeLines = new List<string>();
                 var currentIndex = index;
 
                 var noOfDotsTobeFound = 2;
 
-                // Search backwards... sort of for Uppercase
-                var emptyLines = 0;
+                // Search backwards...
                 var loopCount = 0;
                 while (loopCount < 8 && currentIndex > 0)
                 {
@@ -247,13 +251,7 @@ public static class Matcher
                     var currentLine = lines[currentIndex].Trim();
                     if (string.IsNullOrEmpty(currentLine))
                     {
-                        emptyLines += 1;
-                        if (emptyLines > 0)
-                        {
-                            break;
-                        }
-
-                        continue;
+                        break;
                     }
 
                     var dotIndex = currentLine.LastIndexOf('.');
@@ -282,7 +280,7 @@ public static class Matcher
                     if (dotIndex != -1)
                     {
                         noOfDotsTobeFound -= 1;
-                        if (noOfDotsTobeFound == 0 || noOfDotsTobeFound == 1 && loopCount >= 4)
+                        if (noOfDotsTobeFound == 0 || (noOfDotsTobeFound == 1 && loopCount >= 4))
                         {
                             currentLine = currentLine[(dotIndex + 1)..].Trim();
                             if (string.IsNullOrEmpty(currentLine))
@@ -320,13 +318,13 @@ public static class Matcher
                 beforeLines.Reverse();
                 beforeLines.ForEach(l =>
                 {
-                    quoteString.Append(l);
-                    quoteString.Append('\n');
+                    _ = quoteString.Append(l);
+                    _ = quoteString.Append('\n');
                 });
             }
 
-            quoteString.Append(matchLine);
-            quoteString.Append('\n');
+            _ = quoteString.Append(matchLine);
+            _ = quoteString.Append('\n');
 
             if (
                 !matchLine.AsSpan().EndsWith(".", StringComparison.InvariantCulture)
@@ -389,8 +387,8 @@ public static class Matcher
 
                     if (patternFound)
                     {
-                        quoteString.Append(currentLine);
-                        quoteString.Append('\n');
+                        _ = quoteString.Append(currentLine);
+                        _ = quoteString.Append('\n');
 
                         continue;
                     }
@@ -399,29 +397,29 @@ public static class Matcher
                     if (dotIndex != -1 && endQuoteIndex != -1)
                     {
                         noOfDotsTobeFound -= 1;
-                        if (noOfDotsTobeFound == 0 || noOfDotsTobeFound == 1 && loopCount >= 4)
+                        if (noOfDotsTobeFound == 0 || (noOfDotsTobeFound == 1 && loopCount >= 4))
                         {
                             var endIndex = dotIndex < endQuoteIndex ? endQuoteIndex : dotIndex;
                             currentLine = currentLine[..(endIndex + 1)].Trim();
-                            quoteString.Append(currentLine);
-                            quoteString.Append('\n');
+                            _ = quoteString.Append(currentLine);
+                            _ = quoteString.Append('\n');
                             break;
                         }
                     }
                     else if (dotIndex != -1 && string.IsNullOrEmpty(endQuote))
                     {
                         noOfDotsTobeFound -= 1;
-                        if (noOfDotsTobeFound == 0 || noOfDotsTobeFound == 1 && loopCount >= 4)
+                        if (noOfDotsTobeFound == 0 || (noOfDotsTobeFound == 1 && loopCount >= 4))
                         {
                             currentLine = currentLine[..(dotIndex + 1)].Trim();
-                            quoteString.Append(currentLine);
-                            quoteString.Append('\n');
+                            _ = quoteString.Append(currentLine);
+                            _ = quoteString.Append('\n');
                             break;
                         }
                     }
 
-                    quoteString.Append(currentLine);
-                    quoteString.Append('\n');
+                    _ = quoteString.Append(currentLine);
+                    _ = quoteString.Append('\n');
                 }
             }
 
@@ -445,13 +443,5 @@ public static class Matcher
         }
 
         return literatureTimes;
-    }
-
-    private static bool IsUpperCase(char a)
-    {
-        const char upper = new();
-        char.ToUpperInvariant(upper);
-
-        return a == upper;
     }
 }
