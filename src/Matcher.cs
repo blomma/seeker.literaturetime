@@ -126,7 +126,7 @@ internal static class Matcher
         string line
     )
     {
-        ReadOnlySpan<char> lineSpan = line.AsSpan();
+        var lineSpan = line.AsSpan();
 
         var matches = new Dictionary<string, string>();
 

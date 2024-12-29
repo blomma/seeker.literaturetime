@@ -31,7 +31,7 @@ List<CatalogEntry> catalogEntries = [];
 using (var reader = new StreamReader(pgCatalogPath))
 using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
 {
-    catalogEntries = csv.GetRecords<CatalogEntry>().ToList();
+    catalogEntries = [.. csv.GetRecords<CatalogEntry>()];
 }
 
 List<string> fileDirectoryExcluded = [];
@@ -78,7 +78,8 @@ try
         // else fallback to default
         var utf8File = Path.Combine(filePath!, $"{fileDirectory}-0.txt");
         var iso8859_1 = Path.Combine(filePath!, $"{fileDirectory}-8.txt");
-        Encoding encoding = Encoding.ASCII;
+        var encoding = Encoding.ASCII;
+
         if (File.Exists(utf8File))
         {
             fileToRead = utf8File;
@@ -108,7 +109,7 @@ try
             continue;
         }
 
-        bool subjectExclusionFound = Data.SubjectExlusions.Any(s =>
+        var subjectExclusionFound = Data.SubjectExlusions.Any(s =>
             match.Subjects.Contains(s, StringComparison.OrdinalIgnoreCase)
         );
 
@@ -155,7 +156,7 @@ try
         var subjects = match.Subjects.Split(";").Select(s => s.Trim()).ToList();
         foreach (var subject in subjects)
         {
-            if (subjectHistogram.TryGetValue(subject, out SubjectHistogramEntry? value))
+            if (subjectHistogram.TryGetValue(subject, out var value))
             {
                 value.Count++;
                 value.Matches += matches.Count;
@@ -172,13 +173,7 @@ try
         }
 
         var literatureTimesFromMatches = Matcher
-            .GenerateQuotesFromMatches(
-                matches,
-                lines,
-                match.Title,
-                match.Authors,
-                fileDirectory
-            )
+            .GenerateQuotesFromMatches(matches, lines, match.Title, match.Authors, fileDirectory)
             .ToList();
 
         var lookup = literatureTimesFromMatches.ToLookup(t => t.Time);

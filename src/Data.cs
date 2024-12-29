@@ -56,11 +56,8 @@ internal static class Data
         "Political statistics -- Handbooks, manuals, etc.",
     ];
 
-    public static readonly JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions
-    {
-        WriteIndented = true,
-        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-    };
+    public static readonly JsonSerializerOptions JsonSerializerOptions =
+        new() { WriteIndented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
 
     public static void PersistPhrases(
         Dictionary<string, List<string>> timePhrasesOneOf,
