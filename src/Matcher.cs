@@ -93,41 +93,6 @@ internal static class Matcher
         return true;
     }
 
-    public static bool IsAfterCharValid(
-        ReadOnlySpan<char> line,
-        ReadOnlySpan<char> phrase,
-        int startIndex
-    )
-    {
-        var lastIndex = startIndex + phrase.Length - 1;
-
-        // The match is not the last thing on the line, so we check that
-        if (lastIndex < line.Length - 1)
-        {
-            var phraseLast = phrase.Slice(phrase.Length - 1, 1);
-            if (phraseLast.ContainsAny(Digits))
-            {
-                var afterChar = line.Slice(lastIndex + 1, 1);
-
-                // Phrase is 12:12
-                // Sequence is matched on is 12:12:12
-                if (afterChar.Equals(Colon, StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-
-                // Phrase is 12:1
-                // Sequence is matched on is 12:12
-                if (afterChar.ContainsAny(Digits))
-                {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
     public static Match FindMatches(
         Dictionary<string, List<string>> timePhrasesOneOf,
         Dictionary<string, List<string>> timePhrasesGenericOneOf,
@@ -146,11 +111,6 @@ internal static class Matcher
                 var startIndex = lineSpan.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
 
                 if (!IsBeforeCharValid(lineSpan, phrase, startIndex))
-                {
-                    continue;
-                }
-
-                if (!IsAfterCharValid(lineSpan, phrase, startIndex))
                 {
                     continue;
                 }
@@ -176,11 +136,6 @@ internal static class Matcher
                     continue;
                 }
 
-                if (!IsAfterCharValid(lineSpan, phrase, startIndex))
-                {
-                    continue;
-                }
-
                 matches.Add(phrases.Key, phrase);
 
                 break;
@@ -198,11 +153,6 @@ internal static class Matcher
             {
                 var startIndex = lineSpan.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
                 if (!IsBeforeCharValid(lineSpan, phrase, startIndex))
-                {
-                    continue;
-                }
-
-                if (!IsAfterCharValid(lineSpan, phrase, startIndex))
                 {
                     continue;
                 }
