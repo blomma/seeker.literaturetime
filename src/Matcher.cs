@@ -31,53 +31,62 @@ internal static class Matcher
             return false;
         }
 
-        // The match is not at the start of the line, so we check that
-        if (startIndex > 0)
+        if (startIndex == 0)
         {
-            var phraseFirst = phrase[..1];
+            return true;
+        }
 
-            if (phraseFirst.ContainsAny(Digits))
+        var phraseFirst = phrase[..1];
+        if (phraseFirst.ContainsAny(Digits))
+        {
+            var beforeChar = line.Slice(startIndex - 1, 1);
+
+            // Phrase is 12:12
+            // Sequence is matched on is 12:12:12
+            if (beforeChar.Equals(Colon, StringComparison.OrdinalIgnoreCase))
             {
-                var beforeChar = line.Slice(startIndex - 1, 1);
-
-                // Phrase is 12:12
-                // Sequence is matched on is 12:12:12
-                if (beforeChar.Equals(Colon, StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-
-                // Phrase is 2:12
-                // Sequence is matched on is 12:12
-                if (beforeChar.ContainsAny(Digits))
-                {
-                    return false;
-                }
+                return false;
             }
 
-            // Phrase is five minutes past three
-            // Sequence is matched on: forty-five minutes past three
-            if (startIndex >= 7)
+            // Phrase is 2:12
+            // Sequence is matched on is 12:12
+            if (beforeChar.ContainsAny(Digits))
             {
-                var beforeSpan = line.Slice(startIndex - 7, 7);
-                if (
-                    beforeSpan.Equals(Twenty, StringComparison.OrdinalIgnoreCase)
-                    || beforeSpan.Equals(Thirty, StringComparison.OrdinalIgnoreCase)
-                )
-                {
-                    return false;
-                }
+                return false;
             }
-            else if (startIndex >= 6)
+        }
+
+        // Phrase is five minutes past three
+        // Sequence is matched on: forty-five minutes past three
+        if (startIndex >= 7)
+        {
+            var beforeSpan = line.Slice(startIndex - 7, 7);
+            if (
+                beforeSpan.Equals(Twenty, StringComparison.OrdinalIgnoreCase)
+                || beforeSpan.Equals(Thirty, StringComparison.OrdinalIgnoreCase)
+            )
             {
-                var beforeSpan = line.Slice(startIndex - 6, 6);
-                if (
-                    beforeSpan.Equals(Forty, StringComparison.OrdinalIgnoreCase)
-                    || beforeSpan.Equals(Fifty, StringComparison.OrdinalIgnoreCase)
-                )
-                {
-                    return false;
-                }
+                return false;
+            }
+
+            beforeSpan = line.Slice(startIndex - 6, 6);
+            if (
+                beforeSpan.Equals(Forty, StringComparison.OrdinalIgnoreCase)
+                || beforeSpan.Equals(Fifty, StringComparison.OrdinalIgnoreCase)
+            )
+            {
+                return false;
+            }
+        }
+        else if (startIndex >= 6)
+        {
+            var beforeSpan = line.Slice(startIndex - 6, 6);
+            if (
+                beforeSpan.Equals(Forty, StringComparison.OrdinalIgnoreCase)
+                || beforeSpan.Equals(Fifty, StringComparison.OrdinalIgnoreCase)
+            )
+            {
+                return false;
             }
         }
 
