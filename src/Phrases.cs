@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Globalization;
 
 namespace seeker.literaturetime;
@@ -145,9 +146,9 @@ internal static class Phrases
     }
 
     public static (
-        Dictionary<string, List<string>>,
-        Dictionary<string, List<string>>,
-        Dictionary<string, List<string>>
+        ImmutableDictionary<string, List<string>>,
+        ImmutableDictionary<string, List<string>>,
+        ImmutableDictionary<string, List<string>>
     ) GeneratePhrases()
     {
         var timePhrasesOneOf = new Dictionary<string, List<string>>();
@@ -1556,6 +1557,10 @@ internal static class Phrases
             startOfDay = startOfDay.AddMinutes(1);
         }
 
-        return (timePhrasesOneOf, timePhrasesGenericOneOf, timePhrasesSuperGenericOneOf);
+        return (
+            timePhrasesOneOf.ToImmutableDictionary(),
+            timePhrasesGenericOneOf.ToImmutableDictionary(),
+            timePhrasesSuperGenericOneOf.ToImmutableDictionary()
+        );
     }
 }
