@@ -13,7 +13,7 @@ internal sealed record Match(int MatchType, Dictionary<string, string> Matches);
 
 internal static class Matcher
 {
-    private static readonly SearchValues<char> Digits = SearchValues.Create("123456789");
+    private static readonly SearchValues<char> Digits = SearchValues.Create("0123456789");
 
     private static ReadOnlySpan<char> Twenty => "twenty-";
     private static ReadOnlySpan<char> Thirty => "thirty-";

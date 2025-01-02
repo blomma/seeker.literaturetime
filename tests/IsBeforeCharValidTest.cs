@@ -6,6 +6,10 @@ public class IsBeforeCharValidTest
     [InlineData("12:12", "13:12:12")]
     [InlineData("2:12", "12:12:12")]
     [InlineData("2:12", "12:12")]
+    [InlineData(
+        "0 o'clock",
+        "10 o'clock to-morrow, everybody,' and then I would lay in bed all morning"
+    )]
     public void IsBeforeCharValidTest1(string phrase, string line)
     {
         var startIndex = line.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
