@@ -1,5 +1,6 @@
 using System.Buffers;
 using System.Collections.Concurrent;
+using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using System.Text;
 using seeker.literaturetime.models;
@@ -12,7 +13,7 @@ internal sealed record Match(int MatchType, Dictionary<string, string> Matches);
 
 internal static class Matcher
 {
-    private static readonly SearchValues<char> Digits = SearchValues.Create("123456789");
+    private static readonly SearchValues<char> Digits = SearchValues.Create("0123456789");
 
     private static ReadOnlySpan<char> Twenty => "twenty-";
     private static ReadOnlySpan<char> Thirty => "thirty-";
@@ -94,9 +95,9 @@ internal static class Matcher
     }
 
     public static Match FindMatches(
-        Dictionary<string, List<string>> timePhrasesOneOf,
-        Dictionary<string, List<string>> timePhrasesGenericOneOf,
-        Dictionary<string, List<string>> timePhrasesSuperGenericOneOf,
+        ImmutableDictionary<string, List<string>> timePhrasesOneOf,
+        ImmutableDictionary<string, List<string>> timePhrasesGenericOneOf,
+        ImmutableDictionary<string, List<string>> timePhrasesSuperGenericOneOf,
         string line
     )
     {
