@@ -14,12 +14,15 @@ internal sealed record Match(int MatchType, Dictionary<string, string> Matches);
 internal static class Matcher
 {
     private static readonly SearchValues<char> Digits = SearchValues.Create("0123456789");
+    private static readonly SearchValues<char> Separators = SearchValues.Create(" ,.:;");
 
     private static ReadOnlySpan<char> Twenty => "twenty-";
     private static ReadOnlySpan<char> Thirty => "thirty-";
     private static ReadOnlySpan<char> Forty => "forty-";
     private static ReadOnlySpan<char> Fifty => "fifty-";
     private static ReadOnlySpan<char> Colon => ":";
+    private static ReadOnlySpan<char> AM => "am";
+    private static ReadOnlySpan<char> PM => "pm";
 
     public static bool IsBeforeCharValid(
         ReadOnlySpan<char> line,
@@ -94,6 +97,34 @@ internal static class Matcher
         return true;
     }
 
+    public static bool IsAfterCharValid(
+        ReadOnlySpan<char> line,
+        ReadOnlySpan<char> phrase,
+        int startIndex
+    )
+    {
+        var lastIndex = startIndex + phrase.Length - 1;
+
+        // The match is not the last thing on the line, so we check that
+        if (lastIndex < line.Length - 1)
+        {
+            var phraseLast = phrase.Slice(phrase.Length - 2, 2);
+            if (
+                phraseLast.Equals(AM, StringComparison.OrdinalIgnoreCase)
+                || phraseLast.Equals(PM, StringComparison.OrdinalIgnoreCase)
+            )
+            {
+                var afterChar = line.Slice(lastIndex + 1, 1);
+                if (!afterChar.ContainsAny(Separators))
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
     public static Match FindMatches(
         ImmutableDictionary<string, List<string>> timePhrasesOneOf,
         ImmutableDictionary<string, List<string>> timePhrasesGenericOneOf,
@@ -112,6 +143,11 @@ internal static class Matcher
                 var startIndex = lineSpan.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
 
                 if (!IsBeforeCharValid(lineSpan, phrase, startIndex))
+                {
+                    continue;
+                }
+
+                if (!IsAfterCharValid(lineSpan, phrase, startIndex))
                 {
                     continue;
                 }
@@ -137,6 +173,11 @@ internal static class Matcher
                     continue;
                 }
 
+                if (!IsAfterCharValid(lineSpan, phrase, startIndex))
+                {
+                    continue;
+                }
+
                 matches.Add(phrases.Key, phrase);
 
                 break;
@@ -154,6 +195,11 @@ internal static class Matcher
             {
                 var startIndex = lineSpan.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
                 if (!IsBeforeCharValid(lineSpan, phrase, startIndex))
+                {
+                    continue;
+                }
+
+                if (!IsAfterCharValid(lineSpan, phrase, startIndex))
                 {
                     continue;
                 }
