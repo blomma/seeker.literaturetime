@@ -5,6 +5,7 @@ public class IsAfterCharValidTest
     [Theory]
     [InlineData("7.46 am", "and a density of 7.46 amperes, is one")]
     [InlineData("7.46 pm", "and a density of 7.46 pmperes, is one")]
+    [InlineData("about five Am", "chew up about five American MBAs for breakfast")]
     public void IsBeforeCharValidTestFalse(string phrase, string line)
     {
         var startIndex = line.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
