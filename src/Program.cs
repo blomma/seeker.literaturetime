@@ -27,7 +27,7 @@ Data.PersistPhrases(
 var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 3 };
 
 const string pgCatalogPath = $"{gutPath}/cache/epub/feeds/pg_catalog.csv";
-List<CatalogEntry> catalogEntries = [];
+List<CatalogEntry> catalogEntries;
 using (var reader = new StreamReader(pgCatalogPath))
 using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
 {
@@ -38,7 +38,7 @@ List<string> fileDirectoryExcluded = [];
 
 var (fileDirectoryDone, subjectHistogram) = Data.ReadState(outputDirectory);
 
-Console.CancelKeyPress += (s, e) =>
+Console.CancelKeyPress += (_, _) =>
 {
     Data.PersistState(fileDirectoryDone, subjectHistogram, outputDirectory);
 };
@@ -137,7 +137,7 @@ try
         Parallel.ForEach(
             lines,
             parallelOptions,
-            (line, state, index) =>
+            (line, _, index) =>
             {
                 var result = Matcher.FindMatches(
                     timePhrasesOneOf,
