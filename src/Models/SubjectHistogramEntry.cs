@@ -1,6 +1,6 @@
 namespace seeker.literaturetime.models;
 
-public class SubjectHistogramEntry
+internal sealed class SubjectHistogramEntry
 {
     public string Subject { get; set; } = string.Empty;
 

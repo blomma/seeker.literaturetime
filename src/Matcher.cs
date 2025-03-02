@@ -1,20 +1,28 @@
+using System.Buffers;
 using System.Collections.Concurrent;
+using System.Collections.Immutable;
+using System.Runtime.CompilerServices;
 using System.Text;
 using seeker.literaturetime.models;
 
+[assembly: InternalsVisibleTo("seeker.literaturetime.tests")]
+
 namespace seeker.literaturetime;
 
-public record Match(int MatchType, Dictionary<string, string> Matches);
+internal sealed record Match(int MatchType, Dictionary<string, string> Matches);
 
-public static class Matcher
+internal static class Matcher
 {
-    private static ReadOnlySpan<char> Digits => ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
+    private static readonly SearchValues<char> Digits = SearchValues.Create("0123456789");
+    private static readonly SearchValues<char> Separators = SearchValues.Create(" ,.:;");
 
     private static ReadOnlySpan<char> Twenty => "twenty-";
     private static ReadOnlySpan<char> Thirty => "thirty-";
     private static ReadOnlySpan<char> Forty => "forty-";
     private static ReadOnlySpan<char> Fifty => "fifty-";
     private static ReadOnlySpan<char> Colon => ":";
+    private static ReadOnlySpan<char> AM => "am";
+    private static ReadOnlySpan<char> PM => "pm";
 
     public static bool IsBeforeCharValid(
         ReadOnlySpan<char> line,
@@ -27,53 +35,62 @@ public static class Matcher
             return false;
         }
 
-        // The match is not at the start of the line, so we check that
-        if (startIndex > 0)
+        if (startIndex == 0)
         {
-            var phraseFirst = phrase[..1];
+            return true;
+        }
 
-            if (phraseFirst.ContainsAny(Digits))
+        var phraseFirst = phrase[..1];
+        if (phraseFirst.ContainsAny(Digits))
+        {
+            var beforeChar = line.Slice(startIndex - 1, 1);
+
+            // Phrase is 12:12
+            // Sequence is matched on is 12:12:12
+            if (beforeChar.Equals(Colon, StringComparison.OrdinalIgnoreCase))
             {
-                var beforeChar = line.Slice(startIndex - 1, 1);
-
-                // Phrase is 12:12
-                // Sequence is matched on is 12:12:12
-                if (beforeChar.Equals(Colon, StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-
-                // Phrase is 2:12
-                // Sequence is matched on is 12:12
-                if (beforeChar.ContainsAny(Digits))
-                {
-                    return false;
-                }
+                return false;
             }
 
-            // Phrase is five minutes past three
-            // Sequence is matched on: forty-five minutes past three
-            if (startIndex >= 7)
+            // Phrase is 2:12
+            // Sequence is matched on is 12:12
+            if (beforeChar.ContainsAny(Digits))
             {
-                var beforeSpan = line.Slice(startIndex - 7, 7);
-                if (
-                    beforeSpan.Equals(Twenty, StringComparison.OrdinalIgnoreCase)
-                    || beforeSpan.Equals(Thirty, StringComparison.OrdinalIgnoreCase)
-                )
-                {
-                    return false;
-                }
+                return false;
             }
-            else if (startIndex >= 6)
+        }
+
+        // Phrase is five minutes past three
+        // Sequence is matched on: forty-five minutes past three
+        if (startIndex >= 7)
+        {
+            var beforeSpan = line.Slice(startIndex - 7, 7);
+            if (
+                beforeSpan.Equals(Twenty, StringComparison.OrdinalIgnoreCase)
+                || beforeSpan.Equals(Thirty, StringComparison.OrdinalIgnoreCase)
+            )
             {
-                var beforeSpan = line.Slice(startIndex - 6, 6);
-                if (
-                    beforeSpan.Equals(Forty, StringComparison.OrdinalIgnoreCase)
-                    || beforeSpan.Equals(Fifty, StringComparison.OrdinalIgnoreCase)
-                )
-                {
-                    return false;
-                }
+                return false;
+            }
+
+            beforeSpan = line.Slice(startIndex - 6, 6);
+            if (
+                beforeSpan.Equals(Forty, StringComparison.OrdinalIgnoreCase)
+                || beforeSpan.Equals(Fifty, StringComparison.OrdinalIgnoreCase)
+            )
+            {
+                return false;
+            }
+        }
+        else if (startIndex >= 6)
+        {
+            var beforeSpan = line.Slice(startIndex - 6, 6);
+            if (
+                beforeSpan.Equals(Forty, StringComparison.OrdinalIgnoreCase)
+                || beforeSpan.Equals(Fifty, StringComparison.OrdinalIgnoreCase)
+            )
+            {
+                return false;
             }
         }
 
@@ -91,21 +108,14 @@ public static class Matcher
         // The match is not the last thing on the line, so we check that
         if (lastIndex < line.Length - 1)
         {
-            var phraseLast = phrase.Slice(phrase.Length - 1, 1);
-            if (phraseLast.ContainsAny(Digits))
+            var phraseLast = phrase.Slice(phrase.Length - 2, 2);
+            if (
+                phraseLast.Equals(AM, StringComparison.OrdinalIgnoreCase)
+                || phraseLast.Equals(PM, StringComparison.OrdinalIgnoreCase)
+            )
             {
                 var afterChar = line.Slice(lastIndex + 1, 1);
-
-                // Phrase is 12:12
-                // Sequence is matched on is 12:12:12
-                if (afterChar.Equals(Colon, StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-
-                // Phrase is 12:1
-                // Sequence is matched on is 12:12
-                if (afterChar.ContainsAny(Digits))
+                if (!afterChar.ContainsAny(Separators))
                 {
                     return false;
                 }
@@ -116,13 +126,13 @@ public static class Matcher
     }
 
     public static Match FindMatches(
-        Dictionary<string, List<string>> timePhrasesOneOf,
-        Dictionary<string, List<string>> timePhrasesGenericOneOf,
-        Dictionary<string, List<string>> timePhrasesSuperGenericOneOf,
+        ImmutableDictionary<string, List<string>> timePhrasesOneOf,
+        ImmutableDictionary<string, List<string>> timePhrasesGenericOneOf,
+        ImmutableDictionary<string, List<string>> timePhrasesSuperGenericOneOf,
         string line
     )
     {
-        ReadOnlySpan<char> lineSpan = line.AsSpan();
+        var lineSpan = line.AsSpan();
 
         var matches = new Dictionary<string, string>();
 
@@ -218,26 +228,26 @@ public static class Matcher
             var quoteString = new StringBuilder();
 
             var matchLine = lines[index].Trim();
+            var matchLineFirst = matchLine[0];
 
             var endQuote = "";
-            if (matchLine[0] == '“')
+            if (matchLineFirst == '“')
             {
                 endQuote = "”";
             }
-            if (matchLine[0] == '"')
+            if (matchLineFirst == '"')
             {
                 endQuote = "\"";
             }
 
-            if (!IsUpperCase(matchLine[0]) && string.IsNullOrEmpty(endQuote))
+            if (!char.IsUpper(matchLineFirst) && string.IsNullOrEmpty(endQuote))
             {
                 var beforeLines = new List<string>();
                 var currentIndex = index;
 
                 var noOfDotsTobeFound = 2;
 
-                // Search backwards... sort of for Uppercase
-                var emptyLines = 0;
+                // Search backwards...
                 var loopCount = 0;
                 while (loopCount < 8 && currentIndex > 0)
                 {
@@ -247,13 +257,7 @@ public static class Matcher
                     var currentLine = lines[currentIndex].Trim();
                     if (string.IsNullOrEmpty(currentLine))
                     {
-                        emptyLines += 1;
-                        if (emptyLines > 0)
-                        {
-                            break;
-                        }
-
-                        continue;
+                        break;
                     }
 
                     var dotIndex = currentLine.LastIndexOf('.');
@@ -282,7 +286,7 @@ public static class Matcher
                     if (dotIndex != -1)
                     {
                         noOfDotsTobeFound -= 1;
-                        if (noOfDotsTobeFound == 0 || noOfDotsTobeFound == 1 && loopCount >= 4)
+                        if (noOfDotsTobeFound == 0 || (noOfDotsTobeFound == 1 && loopCount >= 4))
                         {
                             currentLine = currentLine[(dotIndex + 1)..].Trim();
                             if (string.IsNullOrEmpty(currentLine))
@@ -320,13 +324,13 @@ public static class Matcher
                 beforeLines.Reverse();
                 beforeLines.ForEach(l =>
                 {
-                    quoteString.Append(l);
-                    quoteString.Append('\n');
+                    _ = quoteString.Append(l);
+                    _ = quoteString.Append('\n');
                 });
             }
 
-            quoteString.Append(matchLine);
-            quoteString.Append('\n');
+            _ = quoteString.Append(matchLine);
+            _ = quoteString.Append('\n');
 
             if (
                 !matchLine.AsSpan().EndsWith(".", StringComparison.InvariantCulture)
@@ -389,8 +393,8 @@ public static class Matcher
 
                     if (patternFound)
                     {
-                        quoteString.Append(currentLine);
-                        quoteString.Append('\n');
+                        _ = quoteString.Append(currentLine);
+                        _ = quoteString.Append('\n');
 
                         continue;
                     }
@@ -399,29 +403,29 @@ public static class Matcher
                     if (dotIndex != -1 && endQuoteIndex != -1)
                     {
                         noOfDotsTobeFound -= 1;
-                        if (noOfDotsTobeFound == 0 || noOfDotsTobeFound == 1 && loopCount >= 4)
+                        if (noOfDotsTobeFound == 0 || (noOfDotsTobeFound == 1 && loopCount >= 4))
                         {
                             var endIndex = dotIndex < endQuoteIndex ? endQuoteIndex : dotIndex;
                             currentLine = currentLine[..(endIndex + 1)].Trim();
-                            quoteString.Append(currentLine);
-                            quoteString.Append('\n');
+                            _ = quoteString.Append(currentLine);
+                            _ = quoteString.Append('\n');
                             break;
                         }
                     }
                     else if (dotIndex != -1 && string.IsNullOrEmpty(endQuote))
                     {
                         noOfDotsTobeFound -= 1;
-                        if (noOfDotsTobeFound == 0 || noOfDotsTobeFound == 1 && loopCount >= 4)
+                        if (noOfDotsTobeFound == 0 || (noOfDotsTobeFound == 1 && loopCount >= 4))
                         {
                             currentLine = currentLine[..(dotIndex + 1)].Trim();
-                            quoteString.Append(currentLine);
-                            quoteString.Append('\n');
+                            _ = quoteString.Append(currentLine);
+                            _ = quoteString.Append('\n');
                             break;
                         }
                     }
 
-                    quoteString.Append(currentLine);
-                    quoteString.Append('\n');
+                    _ = quoteString.Append(currentLine);
+                    _ = quoteString.Append('\n');
                 }
             }
 
@@ -445,13 +449,5 @@ public static class Matcher
         }
 
         return literatureTimes;
-    }
-
-    private static bool IsUpperCase(char a)
-    {
-        const char upper = new();
-        char.ToUpperInvariant(upper);
-
-        return a == upper;
     }
 }

@@ -6,9 +6,8 @@ using CsvHelper;
 using seeker.literaturetime;
 using seeker.literaturetime.models;
 
-const string outputDirectory = "../quotes.literaturetime.temp";
-
-const string gutPath = "/Users/blomma/Downloads/gutenberg";
+const string outputDirectory = "../quotes.literaturetime";
+const string gutPath = "../gutenberg";
 
 Directory.CreateDirectory(outputDirectory);
 
@@ -27,19 +26,19 @@ Data.PersistPhrases(
 
 var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 3 };
 
-var pgCatalogPath = $"{gutPath}/cache/epub/feeds/pg_catalog.csv";
-List<CatalogEntry> catalogEntries = [];
+const string pgCatalogPath = $"{gutPath}/cache/epub/feeds/pg_catalog.csv";
+List<CatalogEntry> catalogEntries;
 using (var reader = new StreamReader(pgCatalogPath))
 using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
 {
-    catalogEntries = csv.GetRecords<CatalogEntry>().ToList();
+    catalogEntries = [.. csv.GetRecords<CatalogEntry>()];
 }
 
 List<string> fileDirectoryExcluded = [];
 
 var (fileDirectoryDone, subjectHistogram) = Data.ReadState(outputDirectory);
 
-Console.CancelKeyPress += (s, e) =>
+Console.CancelKeyPress += (_, _) =>
 {
     Data.PersistState(fileDirectoryDone, subjectHistogram, outputDirectory);
 };
@@ -79,7 +78,8 @@ try
         // else fallback to default
         var utf8File = Path.Combine(filePath!, $"{fileDirectory}-0.txt");
         var iso8859_1 = Path.Combine(filePath!, $"{fileDirectory}-8.txt");
-        Encoding encoding = Encoding.ASCII;
+        var encoding = Encoding.ASCII;
+
         if (File.Exists(utf8File))
         {
             fileToRead = utf8File;
@@ -109,7 +109,7 @@ try
             continue;
         }
 
-        bool subjectExclusionFound = Data.SubjectExlusions.Any(s =>
+        var subjectExclusionFound = Data.SubjectExlusions.Any(s =>
             match.Subjects.Contains(s, StringComparison.OrdinalIgnoreCase)
         );
 
@@ -137,7 +137,7 @@ try
         Parallel.ForEach(
             lines,
             parallelOptions,
-            (line, state, index) =>
+            (line, _, index) =>
             {
                 var result = Matcher.FindMatches(
                     timePhrasesOneOf,
@@ -153,10 +153,10 @@ try
             }
         );
 
-        var subjects = match.Subjects.Split(";").Select(s => s.Trim());
+        var subjects = match.Subjects.Split(";").Select(s => s.Trim()).ToList();
         foreach (var subject in subjects)
         {
-            if (subjectHistogram.TryGetValue(subject, out SubjectHistogramEntry? value))
+            if (subjectHistogram.TryGetValue(subject, out var value))
             {
                 value.Count++;
                 value.Matches += matches.Count;

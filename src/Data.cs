@@ -1,10 +1,11 @@
+using System.Collections.Immutable;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using seeker.literaturetime.models;
 
 namespace seeker.literaturetime;
 
-public static class Data
+internal static class Data
 {
     public static readonly List<string> SubjectExlusions =
     [
@@ -56,16 +57,16 @@ public static class Data
         "Political statistics -- Handbooks, manuals, etc.",
     ];
 
-    public static readonly JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions
+    public static readonly JsonSerializerOptions JsonSerializerOptions = new()
     {
         WriteIndented = true,
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
     };
 
     public static void PersistPhrases(
-        Dictionary<string, List<string>> timePhrasesOneOf,
-        Dictionary<string, List<string>> timePhrasesGenericOneOf,
-        Dictionary<string, List<string>> timePhrasesSuperGenericOneOf,
+        ImmutableDictionary<string, List<string>> timePhrasesOneOf,
+        ImmutableDictionary<string, List<string>> timePhrasesGenericOneOf,
+        ImmutableDictionary<string, List<string>> timePhrasesSuperGenericOneOf,
         string outputDirectory
     )
     {

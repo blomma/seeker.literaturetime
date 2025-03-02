@@ -1,74 +1,74 @@
+using System.Collections.Immutable;
 using System.Globalization;
 
 namespace seeker.literaturetime;
 
-public static class Phrases
+internal static class Phrases
 {
-    private static readonly Dictionary<int, string> NumberToWord =
-        new()
-        {
-            { 0, "twelve" },
-            { 1, "one" },
-            { 2, "two" },
-            { 3, "three" },
-            { 4, "four" },
-            { 5, "five" },
-            { 6, "six" },
-            { 7, "seven" },
-            { 8, "eight" },
-            { 9, "nine" },
-            { 10, "ten" },
-            { 11, "eleven" },
-            { 12, "twelve" },
-            { 13, "thirteen" },
-            { 14, "fourteen" },
-            { 15, "fifteen" },
-            { 16, "sixteen" },
-            { 17, "seventeen" },
-            { 18, "eighteen" },
-            { 19, "nineteen" },
-            { 20, "twenty" },
-            { 21, "twenty-one" },
-            { 22, "twenty-two" },
-            { 23, "twenty-three" },
-            { 24, "twenty-four" },
-            { 25, "twenty-five" },
-            { 26, "twenty-six" },
-            { 27, "twenty-seven" },
-            { 28, "twenty-eight" },
-            { 29, "twenty-nine" },
-            { 30, "thirty" },
-            { 31, "thirty-one" },
-            { 32, "thirty-two" },
-            { 33, "thirty-three" },
-            { 34, "thirty-four" },
-            { 35, "thirty-five" },
-            { 36, "thirty-six" },
-            { 37, "thirty-seven" },
-            { 38, "thirty-eight" },
-            { 39, "thirty-nine" },
-            { 40, "forty" },
-            { 41, "forty-one" },
-            { 42, "forty-two" },
-            { 43, "forty-three" },
-            { 44, "forty-four" },
-            { 45, "forty-five" },
-            { 46, "forty-six" },
-            { 47, "forty-seven" },
-            { 48, "forty-eight" },
-            { 49, "forty-nine" },
-            { 50, "fifty" },
-            { 51, "fifty-one" },
-            { 52, "fifty-two" },
-            { 53, "fifty-three" },
-            { 54, "fifty-four" },
-            { 55, "fifty-five" },
-            { 56, "fifty-six" },
-            { 57, "fifty-seven" },
-            { 58, "fifty-eight" },
-            { 59, "fifty-nine" },
-            { 60, "sixty" },
-        };
+    private static readonly Dictionary<int, string> NumberToWord = new()
+    {
+        { 0, "twelve" },
+        { 1, "one" },
+        { 2, "two" },
+        { 3, "three" },
+        { 4, "four" },
+        { 5, "five" },
+        { 6, "six" },
+        { 7, "seven" },
+        { 8, "eight" },
+        { 9, "nine" },
+        { 10, "ten" },
+        { 11, "eleven" },
+        { 12, "twelve" },
+        { 13, "thirteen" },
+        { 14, "fourteen" },
+        { 15, "fifteen" },
+        { 16, "sixteen" },
+        { 17, "seventeen" },
+        { 18, "eighteen" },
+        { 19, "nineteen" },
+        { 20, "twenty" },
+        { 21, "twenty-one" },
+        { 22, "twenty-two" },
+        { 23, "twenty-three" },
+        { 24, "twenty-four" },
+        { 25, "twenty-five" },
+        { 26, "twenty-six" },
+        { 27, "twenty-seven" },
+        { 28, "twenty-eight" },
+        { 29, "twenty-nine" },
+        { 30, "thirty" },
+        { 31, "thirty-one" },
+        { 32, "thirty-two" },
+        { 33, "thirty-three" },
+        { 34, "thirty-four" },
+        { 35, "thirty-five" },
+        { 36, "thirty-six" },
+        { 37, "thirty-seven" },
+        { 38, "thirty-eight" },
+        { 39, "thirty-nine" },
+        { 40, "forty" },
+        { 41, "forty-one" },
+        { 42, "forty-two" },
+        { 43, "forty-three" },
+        { 44, "forty-four" },
+        { 45, "forty-five" },
+        { 46, "forty-six" },
+        { 47, "forty-seven" },
+        { 48, "forty-eight" },
+        { 49, "forty-nine" },
+        { 50, "fifty" },
+        { 51, "fifty-one" },
+        { 52, "fifty-two" },
+        { 53, "fifty-three" },
+        { 54, "fifty-four" },
+        { 55, "fifty-five" },
+        { 56, "fifty-six" },
+        { 57, "fifty-seven" },
+        { 58, "fifty-eight" },
+        { 59, "fifty-nine" },
+        { 60, "sixty" },
+    };
 
     private static IEnumerable<string> AppendAm(string timePhrase) =>
         Am.Select(v => $"{timePhrase}{v}");
@@ -146,9 +146,9 @@ public static class Phrases
     }
 
     public static (
-        Dictionary<string, List<string>>,
-        Dictionary<string, List<string>>,
-        Dictionary<string, List<string>>
+        ImmutableDictionary<string, List<string>>,
+        ImmutableDictionary<string, List<string>>,
+        ImmutableDictionary<string, List<string>>
     ) GeneratePhrases()
     {
         var timePhrasesOneOf = new Dictionary<string, List<string>>();
@@ -1557,6 +1557,10 @@ public static class Phrases
             startOfDay = startOfDay.AddMinutes(1);
         }
 
-        return (timePhrasesOneOf, timePhrasesGenericOneOf, timePhrasesSuperGenericOneOf);
+        return (
+            timePhrasesOneOf.ToImmutableDictionary(),
+            timePhrasesGenericOneOf.ToImmutableDictionary(),
+            timePhrasesSuperGenericOneOf.ToImmutableDictionary()
+        );
     }
 }
