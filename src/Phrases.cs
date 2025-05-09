@@ -1238,7 +1238,7 @@ internal static class Phrases
                 );
             }
 
-            if (startOfDay is { Hour: (>= 21 and <= 23) or (>= 0 and <= 5), Minute: > 0 })
+            if (startOfDay is { Hour: >= 21 and <= 23 or >= 0 and <= 5, Minute: > 0 })
             {
                 var hour = startOfDay is { Hour: >= 21 and <= 23 }
                     ? startOfDay.Hour - 12
@@ -1468,9 +1468,9 @@ internal static class Phrases
                         break;
                     case >= 57
                     and < 60:
-                        currentTimePhrasesOneOf.Add($"almost at noon");
-                        currentTimePhrasesOneOf.Add($"nearly noon");
-                        currentTimePhrasesOneOf.Add($"about noon");
+                        currentTimePhrasesOneOf.Add("almost at noon");
+                        currentTimePhrasesOneOf.Add("nearly noon");
+                        currentTimePhrasesOneOf.Add("about noon");
                         break;
                 }
             }
@@ -1527,9 +1527,9 @@ internal static class Phrases
                         break;
                     case >= 57
                     and < 60:
-                        currentTimePhrasesOneOf.Add($"almost at midnight");
-                        currentTimePhrasesOneOf.Add($"nearly midnight");
-                        currentTimePhrasesOneOf.Add($"about midnight");
+                        currentTimePhrasesOneOf.Add("almost at midnight");
+                        currentTimePhrasesOneOf.Add("nearly midnight");
+                        currentTimePhrasesOneOf.Add("about midnight");
                         break;
                 }
             }

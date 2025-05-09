@@ -72,13 +72,13 @@ internal static class Data
     {
         var timePhrasesOneOfJson = JsonSerializer.Serialize(
             timePhrasesOneOf,
-            Data.JsonSerializerOptions
+            JsonSerializerOptions
         );
         File.WriteAllText($"{outputDirectory}/timePhrasesOneOf.json", timePhrasesOneOfJson);
 
         var timePhrasesGenericOneOfJson = JsonSerializer.Serialize(
             timePhrasesGenericOneOf,
-            Data.JsonSerializerOptions
+            JsonSerializerOptions
         );
         File.WriteAllText(
             $"{outputDirectory}/timePhrasesGenericOneOf.json",
@@ -87,7 +87,7 @@ internal static class Data
 
         var timePhrasesSuperGenericOneOfJson = JsonSerializer.Serialize(
             timePhrasesSuperGenericOneOf,
-            Data.JsonSerializerOptions
+            JsonSerializerOptions
         );
         File.WriteAllText(
             $"{outputDirectory}/timePhrasesSuperGenericOneOf.json",
