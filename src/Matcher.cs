@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Microsoft.Extensions.ObjectPool;
 using seeker.literaturetime.models;
 
 [assembly: InternalsVisibleTo("seeker.literaturetime.tests")]
@@ -13,6 +14,12 @@ internal sealed record Match(int MatchType, Dictionary<string, string> Matches);
 
 internal static class Matcher
 {
+    private static readonly ObjectPool<StringBuilder> StringBuilderPool =
+        new DefaultObjectPoolProvider().CreateStringBuilderPool(
+            initialCapacity: 1,
+            maximumRetainedCapacity: 10
+        );
+
     private static readonly SearchValues<char> Digits = SearchValues.Create("0123456789");
     private static readonly SearchValues<char> Separators = SearchValues.Create(" ,.:;");
 
@@ -30,14 +37,12 @@ internal static class Matcher
         int startIndex
     )
     {
-        if (startIndex == -1)
+        switch (startIndex)
         {
-            return false;
-        }
-
-        if (startIndex == 0)
-        {
-            return true;
+            case -1:
+                return false;
+            case 0:
+                return true;
         }
 
         var phraseFirst = phrase[..1];
@@ -60,37 +65,42 @@ internal static class Matcher
             }
         }
 
-        // Phrase is five minutes past three
-        // Sequence is matched on: forty-five minutes past three
-        if (startIndex >= 7)
+        switch (startIndex)
         {
-            var beforeSpan = line.Slice(startIndex - 7, 7);
-            if (
-                beforeSpan.Equals(Twenty, StringComparison.OrdinalIgnoreCase)
-                || beforeSpan.Equals(Thirty, StringComparison.OrdinalIgnoreCase)
-            )
+            // Phrase is five minutes past three
+            // Sequence is matched on: forty-five minutes past three
+            case >= 7:
             {
-                return false;
-            }
+                var beforeSpan = line.Slice(startIndex - 7, 7);
+                if (
+                    beforeSpan.Equals(Twenty, StringComparison.OrdinalIgnoreCase)
+                    || beforeSpan.Equals(Thirty, StringComparison.OrdinalIgnoreCase)
+                )
+                {
+                    return false;
+                }
 
-            beforeSpan = line.Slice(startIndex - 6, 6);
-            if (
-                beforeSpan.Equals(Forty, StringComparison.OrdinalIgnoreCase)
-                || beforeSpan.Equals(Fifty, StringComparison.OrdinalIgnoreCase)
-            )
-            {
-                return false;
+                beforeSpan = line.Slice(startIndex - 6, 6);
+                if (
+                    beforeSpan.Equals(Forty, StringComparison.OrdinalIgnoreCase)
+                    || beforeSpan.Equals(Fifty, StringComparison.OrdinalIgnoreCase)
+                )
+                {
+                    return false;
+                }
+                break;
             }
-        }
-        else if (startIndex >= 6)
-        {
-            var beforeSpan = line.Slice(startIndex - 6, 6);
-            if (
-                beforeSpan.Equals(Forty, StringComparison.OrdinalIgnoreCase)
-                || beforeSpan.Equals(Fifty, StringComparison.OrdinalIgnoreCase)
-            )
+            case >= 6:
             {
-                return false;
+                var beforeSpan = line.Slice(startIndex - 6, 6);
+                if (
+                    beforeSpan.Equals(Forty, StringComparison.OrdinalIgnoreCase)
+                    || beforeSpan.Equals(Fifty, StringComparison.OrdinalIgnoreCase)
+                )
+                {
+                    return false;
+                }
+                break;
             }
         }
 
@@ -106,23 +116,23 @@ internal static class Matcher
         var lastIndex = startIndex + phrase.Length - 1;
 
         // The match is not the last thing on the line, so we check that
-        if (lastIndex < line.Length - 1)
+        if (lastIndex >= line.Length - 1)
         {
-            var phraseLast = phrase.Slice(phrase.Length - 2, 2);
-            if (
-                phraseLast.Equals(AM, StringComparison.OrdinalIgnoreCase)
-                || phraseLast.Equals(PM, StringComparison.OrdinalIgnoreCase)
-            )
-            {
-                var afterChar = line.Slice(lastIndex + 1, 1);
-                if (!afterChar.ContainsAny(Separators))
-                {
-                    return false;
-                }
-            }
+            return true;
         }
 
-        return true;
+        var phraseLast = phrase.Slice(phrase.Length - 2, 2);
+        if (
+            !phraseLast.Equals(AM, StringComparison.OrdinalIgnoreCase)
+            && !phraseLast.Equals(PM, StringComparison.OrdinalIgnoreCase)
+        )
+        {
+            return true;
+        }
+
+        var afterChar = line.Slice(lastIndex + 1, 1);
+
+        return afterChar.ContainsAny(Separators);
     }
 
     public static Match FindMatches(
@@ -225,20 +235,17 @@ internal static class Matcher
 
         foreach (var (index, value) in matches)
         {
-            var quoteString = new StringBuilder();
+            var quoteString = StringBuilderPool.Get();
 
             var matchLine = lines[index].Trim();
             var matchLineFirst = matchLine[0];
 
-            var endQuote = "";
-            if (matchLineFirst == '“')
+            var endQuote = matchLineFirst switch
             {
-                endQuote = "”";
-            }
-            if (matchLineFirst == '"')
-            {
-                endQuote = "\"";
-            }
+                '“' => "”",
+                '"' => "\"",
+                _ => "",
+            };
 
             if (!char.IsUpper(matchLineFirst) && string.IsNullOrEmpty(endQuote))
             {
@@ -286,7 +293,7 @@ internal static class Matcher
                     if (dotIndex != -1)
                     {
                         noOfDotsTobeFound -= 1;
-                        if (noOfDotsTobeFound == 0 || (noOfDotsTobeFound == 1 && loopCount >= 4))
+                        if (noOfDotsTobeFound == 0 || noOfDotsTobeFound == 1 && loopCount >= 4)
                         {
                             currentLine = currentLine[(dotIndex + 1)..].Trim();
                             if (string.IsNullOrEmpty(currentLine))
@@ -322,11 +329,11 @@ internal static class Matcher
                 }
 
                 beforeLines.Reverse();
-                beforeLines.ForEach(l =>
+                foreach (var beforeLine in beforeLines)
                 {
-                    _ = quoteString.Append(l);
+                    _ = quoteString.Append(beforeLine);
                     _ = quoteString.Append('\n');
-                });
+                }
             }
 
             _ = quoteString.Append(matchLine);
@@ -403,7 +410,7 @@ internal static class Matcher
                     if (dotIndex != -1 && endQuoteIndex != -1)
                     {
                         noOfDotsTobeFound -= 1;
-                        if (noOfDotsTobeFound == 0 || (noOfDotsTobeFound == 1 && loopCount >= 4))
+                        if (noOfDotsTobeFound == 0 || noOfDotsTobeFound == 1 && loopCount >= 4)
                         {
                             var endIndex = dotIndex < endQuoteIndex ? endQuoteIndex : dotIndex;
                             currentLine = currentLine[..(endIndex + 1)].Trim();
@@ -415,7 +422,7 @@ internal static class Matcher
                     else if (dotIndex != -1 && string.IsNullOrEmpty(endQuote))
                     {
                         noOfDotsTobeFound -= 1;
-                        if (noOfDotsTobeFound == 0 || (noOfDotsTobeFound == 1 && loopCount >= 4))
+                        if (noOfDotsTobeFound == 0 || noOfDotsTobeFound == 1 && loopCount >= 4)
                         {
                             currentLine = currentLine[..(dotIndex + 1)].Trim();
                             _ = quoteString.Append(currentLine);
@@ -431,6 +438,8 @@ internal static class Matcher
 
             var result = quoteString.ToString();
             result = result.Trim();
+
+            StringBuilderPool.Return(quoteString);
 
             foreach (var m in value.Matches)
             {

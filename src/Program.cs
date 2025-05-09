@@ -113,14 +113,10 @@ try
             match.Subjects.Contains(s, StringComparison.OrdinalIgnoreCase)
         );
 
-        if (subjectExclusionFound)
-        {
-            fileDirectoryExcluded.Add(fileDirectory);
-
-            continue;
-        }
-
-        if (!match.Language.Equals("en", StringComparison.OrdinalIgnoreCase))
+        if (
+            subjectExclusionFound
+            || !match.Language.Equals("en", StringComparison.OrdinalIgnoreCase)
+        )
         {
             fileDirectoryExcluded.Add(fileDirectory);
 
