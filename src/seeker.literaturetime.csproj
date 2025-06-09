@@ -8,7 +8,7 @@
         <AnalysisLevel>latest-Recommended</AnalysisLevel>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="CsvHelper" Version="33.0.1" />
+        <PackageReference Include="CsvHelper" Version="33.1.0" />
         <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="9.0.5" />
     </ItemGroup>
 </Project>
