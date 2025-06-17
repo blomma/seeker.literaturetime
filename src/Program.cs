@@ -129,7 +129,7 @@ try
 
         var lines = File.ReadAllLines(fileToRead, encoding);
 
-        var matches = new ConcurrentDictionary<long, Match>();
+        var matches = new ConcurrentDictionary<long, Dictionary<string, string>>();
         Parallel.ForEach(
             lines,
             parallelOptions,
@@ -142,7 +142,7 @@ try
                     line
                 );
 
-                if (result.Matches.Count > 0)
+                if (result.Count > 0)
                 {
                     matches.TryAdd(index, result);
                 }

@@ -10,8 +10,6 @@ using seeker.literaturetime.models;
 
 namespace seeker.literaturetime;
 
-internal sealed record Match(int MatchType, Dictionary<string, string> Matches);
-
 internal static class Matcher
 {
     private static readonly ObjectPool<StringBuilder> StringBuilderPool =
@@ -135,7 +133,7 @@ internal static class Matcher
         return afterChar.ContainsAny(Separators);
     }
 
-    public static Match FindMatches(
+    public static Dictionary<string, string> FindMatches(
         ImmutableDictionary<string, List<string>> timePhrasesOneOf,
         ImmutableDictionary<string, List<string>> timePhrasesGenericOneOf,
         ImmutableDictionary<string, List<string>> timePhrasesSuperGenericOneOf,
@@ -170,7 +168,7 @@ internal static class Matcher
 
         if (matches.Count > 0)
         {
-            return new Match(0, matches);
+            return matches;
         }
 
         foreach (var phrases in timePhrasesGenericOneOf)
@@ -196,7 +194,7 @@ internal static class Matcher
 
         if (matches.Count > 0)
         {
-            return new Match(1, matches);
+            return matches;
         }
 
         foreach (var phrases in timePhrasesSuperGenericOneOf)
@@ -220,11 +218,11 @@ internal static class Matcher
             }
         }
 
-        return new Match(2, matches);
+        return matches;
     }
 
     public static IEnumerable<LiteratureTimeEntry> GenerateQuotesFromMatches(
-        ConcurrentDictionary<long, Match> matches,
+        ConcurrentDictionary<long, Dictionary<string, string>> matches,
         string[] lines,
         string title,
         string author,
@@ -441,7 +439,7 @@ internal static class Matcher
 
             StringBuilderPool.Return(quoteString);
 
-            foreach (var m in value.Matches)
+            foreach (var m in value)
             {
                 var literatureTime = new LiteratureTimeEntry(
                     m.Key,
@@ -449,8 +447,7 @@ internal static class Matcher
                     result,
                     title,
                     author,
-                    gutenbergReference,
-                    value.MatchType
+                    gutenbergReference
                 );
 
                 literatureTimes.Add(literatureTime);

@@ -6,6 +6,5 @@ internal sealed record LiteratureTimeEntry(
     string Quote,
     string Title,
     string Author,
-    string GutenbergReference,
-    int MatchType
+    string GutenbergReference
 );
