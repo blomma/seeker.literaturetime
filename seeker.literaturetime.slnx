@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="src/seeker.literaturetime.csproj" />
+  <Project Path="tests/seeker.literaturetime.tests.csproj" />
+</Solution>
