@@ -137,25 +137,23 @@ internal static class Matcher
         ImmutableDictionary<string, List<string>> timePhrasesOneOf,
         ImmutableDictionary<string, List<string>> timePhrasesGenericOneOf,
         ImmutableDictionary<string, List<string>> timePhrasesSuperGenericOneOf,
-        string line
+        ReadOnlySpan<char> line
     )
     {
-        var lineSpan = line.AsSpan();
-
         var matches = new Dictionary<string, string>();
 
         foreach (var phrases in timePhrasesOneOf)
         {
             foreach (var phrase in phrases.Value)
             {
-                var startIndex = lineSpan.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
+                var startIndex = line.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
 
-                if (!IsBeforeCharValid(lineSpan, phrase, startIndex))
+                if (!IsBeforeCharValid(line, phrase, startIndex))
                 {
                     continue;
                 }
 
-                if (!IsAfterCharValid(lineSpan, phrase, startIndex))
+                if (!IsAfterCharValid(line, phrase, startIndex))
                 {
                     continue;
                 }
@@ -175,13 +173,13 @@ internal static class Matcher
         {
             foreach (var phrase in phrases.Value)
             {
-                var startIndex = lineSpan.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
-                if (!IsBeforeCharValid(lineSpan, phrase, startIndex))
+                var startIndex = line.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
+                if (!IsBeforeCharValid(line, phrase, startIndex))
                 {
                     continue;
                 }
 
-                if (!IsAfterCharValid(lineSpan, phrase, startIndex))
+                if (!IsAfterCharValid(line, phrase, startIndex))
                 {
                     continue;
                 }
@@ -201,13 +199,13 @@ internal static class Matcher
         {
             foreach (var phrase in phrases.Value)
             {
-                var startIndex = lineSpan.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
-                if (!IsBeforeCharValid(lineSpan, phrase, startIndex))
+                var startIndex = line.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
+                if (!IsBeforeCharValid(line, phrase, startIndex))
                 {
                     continue;
                 }
 
-                if (!IsAfterCharValid(lineSpan, phrase, startIndex))
+                if (!IsAfterCharValid(line, phrase, startIndex))
                 {
                     continue;
                 }
@@ -337,10 +335,7 @@ internal static class Matcher
             _ = quoteString.Append(matchLine);
             _ = quoteString.Append('\n');
 
-            if (
-                !matchLine.AsSpan().EndsWith(".", StringComparison.InvariantCulture)
-                || !string.IsNullOrEmpty(endQuote)
-            )
+            if (!matchLine.EndsWith('.') || !string.IsNullOrEmpty(endQuote))
             {
                 var currentIndex = index;
 
