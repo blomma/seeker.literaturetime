@@ -349,8 +349,7 @@ internal static class Phrases
                             )
                         );
                         break;
-                    case >= 57
-                    and < 60:
+                    case >= 57 and < 60:
                         currentTimePhrasesOneOf.AddRange(
                             Combine(
                                 AlmostAt,
@@ -554,8 +553,7 @@ internal static class Phrases
                             )
                         );
                         break;
-                    case >= 57
-                    and < 60:
+                    case >= 57 and < 60:
                         currentTimePhrasesOneOf.AddRange(
                             Combine(
                                 AlmostAt,
@@ -703,8 +701,7 @@ internal static class Phrases
                             )
                         );
                         break;
-                    case >= 57
-                    and < 60:
+                    case >= 57 and < 60:
                         currentTimePhrasesGenericOneOf.AddRange(
                             Combine(
                                 AlmostAt,
@@ -1022,8 +1019,7 @@ internal static class Phrases
                         );
 
                         break;
-                    case >= 57
-                    and < 60:
+                    case >= 57 and < 60:
                         currentTimePhrasesOneOf.AddRange(
                             Combine(
                                 AlmostAt,
@@ -1194,8 +1190,7 @@ internal static class Phrases
                         );
 
                         break;
-                    case >= 57
-                    and < 60:
+                    case >= 57 and < 60:
                         currentTimePhrasesOneOf.AddRange(
                             Combine(
                                 AlmostAt,
@@ -1369,8 +1364,7 @@ internal static class Phrases
                         );
 
                         break;
-                    case >= 57
-                    and < 60:
+                    case >= 57 and < 60:
                         currentTimePhrasesOneOf.AddRange(
                             Combine(
                                 AlmostAt,
@@ -1466,8 +1460,7 @@ internal static class Phrases
                         currentTimePhrasesOneOf.Add("quarter to noon");
                         currentTimePhrasesOneOf.Add("quarter-to noon");
                         break;
-                    case >= 57
-                    and < 60:
+                    case >= 57 and < 60:
                         currentTimePhrasesOneOf.Add("almost at noon");
                         currentTimePhrasesOneOf.Add("nearly noon");
                         currentTimePhrasesOneOf.Add("about noon");
@@ -1525,8 +1518,7 @@ internal static class Phrases
                         currentTimePhrasesOneOf.Add("quarter to midnight");
                         currentTimePhrasesOneOf.Add("quarter-to midnight");
                         break;
-                    case >= 57
-                    and < 60:
+                    case >= 57 and < 60:
                         currentTimePhrasesOneOf.Add("almost at midnight");
                         currentTimePhrasesOneOf.Add("nearly midnight");
                         currentTimePhrasesOneOf.Add("about midnight");
