@@ -17,6 +17,7 @@ internal class AhoCorasick
     private char[] _childChars = [];
     private int[] _childIndices = [];
     private (string TimeKey, string Phrase)[] _allResults = [];
+    private readonly int[] _rootTransitions = new int[256];
 
     // Temporary building structures
     private class TempNode
@@ -149,6 +150,18 @@ internal class AhoCorasick
             }
 
             _nodes[i] = fn;
+
+            if (i == 0)
+            {
+                Array.Fill(_rootTransitions, 0);
+                foreach (var kvp in tn.Children)
+                {
+                    if (kvp.Key < 256)
+                    {
+                        _rootTransitions[kvp.Key] = kvp.Value.Index;
+                    }
+                }
+            }
         }
     }
 
@@ -158,15 +171,34 @@ internal class AhoCorasick
         for (var i = 0; i < text.Length; i++)
         {
             var c = char.ToLowerInvariant(text[i]);
-            
-            while (currentState != 0 && !TryGetNextState(currentState, c, out _))
+
+            if (currentState == 0)
             {
-                currentState = _nodes[currentState].Failure;
+                if (c < 256)
+                {
+                    currentState = _rootTransitions[c];
+                }
+                else
+                {
+                    TryGetNextState(0, c, out currentState);
+                }
+            }
+            else
+            {
+                while (currentState != 0 && !TryGetNextState(currentState, c, out _))
+                {
+                    currentState = _nodes[currentState].Failure;
+                }
+
+                if (TryGetNextState(currentState, c, out int nextState))
+                {
+                    currentState = nextState;
+                }
             }
 
-            if (TryGetNextState(currentState, c, out int nextState))
+            if (currentState == 0)
             {
-                currentState = nextState;
+                continue;
             }
 
             ref readonly var node = ref _nodes[currentState];
