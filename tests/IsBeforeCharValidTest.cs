@@ -10,7 +10,10 @@ public class IsBeforeCharValidTest
         "0 o'clock",
         "10 o'clock to-morrow, everybody,' and then I would lay in bed all morning"
     )]
-    public void IsBeforeCharValid_ShouldReturnFalse_WhenCharBeforeIsInvalidDigitOrColon(string phrase, string line)
+    public void IsBeforeCharValid_ShouldReturnFalse_WhenCharBeforeIsInvalidDigitOrColon(
+        string phrase,
+        string line
+    )
     {
         var startIndex = line.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
         var result = Matcher.IsBeforeCharValid(line, phrase, startIndex);
@@ -38,7 +41,10 @@ public class IsBeforeCharValidTest
     [InlineData("five minutes past three", "a single time thirty-five minutes past three")]
     [InlineData("five minutes past three", "a single time forty-five minutes past three")]
     [InlineData("five minutes past three", "a single time fifty-five minutes past three")]
-    public void IsBeforeCharValid_ShouldReturnFalse_WhenPartOfAnotherTimeWord(string phrase, string line)
+    public void IsBeforeCharValid_ShouldReturnFalse_WhenPartOfAnotherTimeWord(
+        string phrase,
+        string line
+    )
     {
         var startIndex = line.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
         var result = Matcher.IsBeforeCharValid(line, phrase, startIndex);

@@ -20,11 +20,17 @@ The project operates as a high-performance scanner that:
 ## Project Structure
 
 - `src/Program.cs`: The orchestration layer and entry point.
+- `src/AhoCorasick.cs`: High-performance string search using the Aho-Corasick algorithm.
 - `src/Phrases.cs`: Logic for generating the vast dictionary of time-related search phrases.
 - `src/Matcher.cs`: High-performance matching engine with character validation and context extraction.
 - `src/Data.cs`: State persistence, subject exclusion lists, and JSON serialization configurations.
-- `src/Models/`: Data structures for `CatalogEntry`, `LiteratureTimeEntry`, and statistics.
-- `tests/`: Unit tests focused on the `Matcher` logic.
+- `src/Models/`: Data structures for `CatalogEntry`, `LiteratureTimeEntry`, and `SubjectHistogramEntry`.
+- `tests/`: Comprehensive unit test suite (xUnit) covering:
+    - `AhoCorasickTest.cs`: Automaton validation.
+    - `PhrasesTest.cs`: Time phrase generation.
+    - `MatcherTest.cs`: Matching and context extraction logic.
+    - `DataTest.cs`: State persistence and serialization.
+    - `IsBeforeCharValidTest.cs` & `IsAfterCharValidTest.cs`: Fine-grained character validation rules.
 
 ## Building and Running
 

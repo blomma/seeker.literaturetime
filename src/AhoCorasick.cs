@@ -32,8 +32,11 @@ internal class AhoCorasick
 
     public void Add(string timeKey, string phrase)
     {
-        if (_tempRoot == null) throw new InvalidOperationException("Automaton already built.");
-        
+        if (_tempRoot == null)
+        {
+            throw new InvalidOperationException("Automaton already built.");
+        }
+
         var node = _tempRoot;
         foreach (var c in phrase)
         {
@@ -50,7 +53,10 @@ internal class AhoCorasick
 
     public void Build()
     {
-        if (_tempRoot == null) return;
+        if (_tempRoot == null)
+        {
+            return;
+        }
 
         var queue = new Queue<TempNode>();
         foreach (var child in _tempRoot.Children.Values)
@@ -95,7 +101,7 @@ internal class AhoCorasick
         var tempNodes = new List<TempNode>();
         var q = new Queue<TempNode>();
         q.Enqueue(_tempRoot!);
-        
+
         while (q.Count > 0)
         {
             var n = q.Dequeue();
@@ -108,7 +114,7 @@ internal class AhoCorasick
         }
 
         _nodes = new FlatNode[tempNodes.Count];
-        
+
         int totalChildren = 0;
         int totalResults = 0;
         foreach (var tn in tempNodes)
@@ -133,7 +139,7 @@ internal class AhoCorasick
                 ChildrenOffset = currentChildOffset,
                 ChildrenCount = tn.Children.Count,
                 ResultsOffset = currentResultOffset,
-                ResultsCount = tn.Results.Count
+                ResultsCount = tn.Results.Count,
             };
 
             foreach (var kvp in tn.Children)
@@ -207,10 +213,16 @@ internal class AhoCorasick
                 for (int r = 0; r < node.ResultsCount; r++)
                 {
                     var (timeKey, phrase) = _allResults[node.ResultsOffset + r];
-                    if (matches.ContainsKey(timeKey)) continue;
+                    if (matches.ContainsKey(timeKey))
+                    {
+                        continue;
+                    }
 
                     var startIndex = i - phrase.Length + 1;
-                    if (Matcher.IsBeforeCharValid(text, phrase, startIndex) && Matcher.IsAfterCharValid(text, phrase, startIndex))
+                    if (
+                        Matcher.IsBeforeCharValid(text, phrase, startIndex)
+                        && Matcher.IsAfterCharValid(text, phrase, startIndex)
+                    )
                     {
                         matches.Add(timeKey, phrase);
                     }
