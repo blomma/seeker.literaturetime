@@ -1,6 +1,5 @@
 using System.Buffers;
 using System.Collections.Concurrent;
-using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.Extensions.ObjectPool;
@@ -134,87 +133,29 @@ internal static class Matcher
     }
 
     public static Dictionary<string, string> FindMatches(
-        ImmutableDictionary<string, List<string>> timePhrasesOneOf,
-        ImmutableDictionary<string, List<string>> timePhrasesGenericOneOf,
-        ImmutableDictionary<string, List<string>> timePhrasesSuperGenericOneOf,
+        AhoCorasick oneOfAutomaton,
+        AhoCorasick genericAutomaton,
+        AhoCorasick superGenericAutomaton,
         ReadOnlySpan<char> line
     )
     {
         var matches = new Dictionary<string, string>();
 
-        foreach (var phrases in timePhrasesOneOf)
-        {
-            foreach (var phrase in phrases.Value)
-            {
-                var startIndex = line.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
-
-                if (!IsBeforeCharValid(line, phrase, startIndex))
-                {
-                    continue;
-                }
-
-                if (!IsAfterCharValid(line, phrase, startIndex))
-                {
-                    continue;
-                }
-
-                matches.Add(phrases.Key, phrase);
-
-                break;
-            }
-        }
+        oneOfAutomaton.Search(line, matches);
 
         if (matches.Count > 0)
         {
             return matches;
         }
 
-        foreach (var phrases in timePhrasesGenericOneOf)
-        {
-            foreach (var phrase in phrases.Value)
-            {
-                var startIndex = line.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
-                if (!IsBeforeCharValid(line, phrase, startIndex))
-                {
-                    continue;
-                }
-
-                if (!IsAfterCharValid(line, phrase, startIndex))
-                {
-                    continue;
-                }
-
-                matches.Add(phrases.Key, phrase);
-
-                break;
-            }
-        }
+        genericAutomaton.Search(line, matches);
 
         if (matches.Count > 0)
         {
             return matches;
         }
 
-        foreach (var phrases in timePhrasesSuperGenericOneOf)
-        {
-            foreach (var phrase in phrases.Value)
-            {
-                var startIndex = line.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
-                if (!IsBeforeCharValid(line, phrase, startIndex))
-                {
-                    continue;
-                }
-
-                if (!IsAfterCharValid(line, phrase, startIndex))
-                {
-                    continue;
-                }
-
-                matches.Add(phrases.Key, phrase);
-
-                break;
-            }
-        }
+        superGenericAutomaton.Search(line, matches);
 
         return matches;
     }

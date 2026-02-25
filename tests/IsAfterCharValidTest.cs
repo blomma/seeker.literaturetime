@@ -6,7 +6,10 @@ public class IsAfterCharValidTest
     [InlineData("7.46 am", "and a density of 7.46 amperes, is one")]
     [InlineData("7.46 pm", "and a density of 7.46 pmperes, is one")]
     [InlineData("about five Am", "chew up about five American MBAs for breakfast")]
-    public void IsBeforeCharValidTestFalse(string phrase, string line)
+    public void IsAfterCharValid_ShouldReturnFalse_WhenCharAfterIsInvalid(
+        string phrase,
+        string line
+    )
     {
         var startIndex = line.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
         var result = Matcher.IsAfterCharValid(line, phrase, startIndex);
@@ -27,7 +30,7 @@ public class IsAfterCharValidTest
     [InlineData("7.46 pm", "and a density of 7.46 pm;peres, is one")]
     [InlineData("7.46 am", "and a density of 7.46 am")]
     [InlineData("7.46 pm", "and a density of 7.46 pm")]
-    public void IsBeforeCharValidTestTrue(string phrase, string line)
+    public void IsAfterCharValid_ShouldReturnTrue_WhenCharAfterIsValid(string phrase, string line)
     {
         var startIndex = line.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
         var result = Matcher.IsAfterCharValid(line, phrase, startIndex);
