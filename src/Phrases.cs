@@ -712,7 +712,8 @@ internal static class Phrases
                 }
 
                 currentTimePhrasesGenericOneOf.Add($"{toMinute} {toMinutePlural} to {toHour}");
-                currentTimePhrasesGenericOneOf.Add($"{toMinute} to {toHour}");
+                // Removed for now since it gave to many false positives
+                // currentTimePhrasesGenericOneOf.Add($"{toMinute} to {toHour}");
 
                 switch (startOfDay.Minute)
                 {
@@ -1650,7 +1651,8 @@ internal static class Phrases
             }
 
             currentTimePhrasesSuperGenericOneOf.Add($"{startOfDay:HH:mm}h");
-            currentTimePhrasesSuperGenericOneOf.Add($"{startOfDay:HHmm}h");
+            // Removed for now since it gave to many false positives
+            // currentTimePhrasesSuperGenericOneOf.Add($"{startOfDay:HHmm}h");
 
             var key = startOfDay.ToString("HH:mm", CultureInfo.InvariantCulture);
 
