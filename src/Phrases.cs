@@ -708,7 +708,8 @@ internal static class Phrases
                 foreach (var tmw in toMinuteWords)
                 {
                     currentTimePhrasesGenericOneOf.Add($"{tmw} {toMinutePlural} to {toHourWord}");
-                    currentTimePhrasesGenericOneOf.Add($"{tmw} to {toHourWord}");
+                    // Removed for now since it gave to many false positives
+                    // currentTimePhrasesGenericOneOf.Add($"{tmw} to {toHourWord}");
                 }
 
                 currentTimePhrasesGenericOneOf.Add($"{toMinute} {toMinutePlural} to {toHour}");
