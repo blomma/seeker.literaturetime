@@ -84,41 +84,6 @@ public class AhoCorasickTest
     }
 
     [Fact]
-    public void Search_ShouldHandleOverlappingPatterns()
-    {
-        // Arrange
-        var phrases = new Dictionary<string, List<string>>
-        {
-            {
-                "time1",
-                new List<string> { "hers" }
-            },
-            {
-                "time2",
-                new List<string> { "he" }
-            },
-            {
-                "time3",
-                new List<string> { "she" }
-            },
-        }.ToImmutableDictionary();
-        var ac = AhoCorasick.CreateAutomaton(phrases);
-        var matches = new Dictionary<string, string>();
-        var text = "ushers";
-
-        // Act
-        ac.Search(text, matches);
-
-        // Assert
-        // "he", "she", "hers" all exist in "ushers"
-        // Note: Matcher.IsBeforeCharValid and IsAfterCharValid might filter these if they aren't 'valid' times
-        // but for basic AhoCorasick testing we just check if they are found.
-        Assert.Contains("time1", matches.Keys);
-        Assert.Contains("time2", matches.Keys);
-        Assert.Contains("time3", matches.Keys);
-    }
-
-    [Fact]
     public void Search_ShouldRespectValidationLogic()
     {
         // Arrange
@@ -140,6 +105,51 @@ public class AhoCorasickTest
 
         // Assert
         Assert.Empty(matches);
+    }
+
+    [Theory]
+    [InlineData("It was twentyfive minutes past.")]
+    public void Search_ShouldNotMatchPartOfWord(string text)
+    {
+        // Arrange
+        var phrases = new Dictionary<string, List<string>>
+        {
+            {
+                "05:00",
+                new List<string> { "five" }
+            },
+        }.ToImmutableDictionary();
+        var ac = AhoCorasick.CreateAutomaton(phrases);
+        var matches = new Dictionary<string, string>();
+
+        // Act
+        ac.Search(text, matches);
+
+        // Assert
+        Assert.Empty(matches);
+    }
+
+    [Theory]
+    [InlineData("It was five minutes past.")]
+    [InlineData("It was;five minutes past.")]
+    public void Search_ShouldAllowBehindWordBoundary(string text)
+    {
+        // Arrange
+        var phrases = new Dictionary<string, List<string>>
+        {
+            {
+                "05:00",
+                new List<string> { "five" }
+            },
+        }.ToImmutableDictionary();
+        var ac = AhoCorasick.CreateAutomaton(phrases);
+        var matches = new Dictionary<string, string>();
+
+        // Act
+        ac.Search(text, matches);
+
+        // Assert
+        Assert.Contains("05:00", matches.Keys);
     }
 
     [Fact]
