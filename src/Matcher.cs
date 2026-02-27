@@ -42,11 +42,11 @@ internal static class Matcher
                 return true;
         }
 
-        var phraseFirst = phrase[..1];
-        if (phraseFirst.ContainsAny(Digits))
-        {
-            var beforeChar = line.Slice(startIndex - 1, 1);
+        var beforeChar = line.Slice(startIndex - 1, 1);
 
+        var phraseFirstChar = phrase[..1];
+        if (phraseFirstChar.ContainsAny(Digits))
+        {
             // Phrase is 12:12
             // Sequence is matched on is 12:12:12
             if (beforeChar.Equals(Colon, StringComparison.OrdinalIgnoreCase))
@@ -62,46 +62,7 @@ internal static class Matcher
             }
         }
 
-        switch (startIndex)
-        {
-            // Phrase is five minutes past three
-            // Sequence is matched on: forty-five minutes past three
-            case >= 7:
-            {
-                var beforeSpan = line.Slice(startIndex - 7, 7);
-                if (
-                    beforeSpan.Equals(Twenty, StringComparison.OrdinalIgnoreCase)
-                    || beforeSpan.Equals(Thirty, StringComparison.OrdinalIgnoreCase)
-                )
-                {
-                    return false;
-                }
-
-                beforeSpan = line.Slice(startIndex - 6, 6);
-                if (
-                    beforeSpan.Equals(Forty, StringComparison.OrdinalIgnoreCase)
-                    || beforeSpan.Equals(Fifty, StringComparison.OrdinalIgnoreCase)
-                )
-                {
-                    return false;
-                }
-                break;
-            }
-            case >= 6:
-            {
-                var beforeSpan = line.Slice(startIndex - 6, 6);
-                if (
-                    beforeSpan.Equals(Forty, StringComparison.OrdinalIgnoreCase)
-                    || beforeSpan.Equals(Fifty, StringComparison.OrdinalIgnoreCase)
-                )
-                {
-                    return false;
-                }
-                break;
-            }
-        }
-
-        return true;
+        return beforeChar.ContainsAny(Separators);
     }
 
     public static bool IsAfterCharValid(
@@ -112,23 +73,13 @@ internal static class Matcher
     {
         var lastIndex = startIndex + phrase.Length - 1;
 
-        // The match is not the last thing on the line, so we check that
+        // The match is the last thing on the line
         if (lastIndex >= line.Length - 1)
         {
             return true;
         }
 
-        var phraseLast = phrase.Slice(phrase.Length - 2, 2);
-        if (
-            !phraseLast.Equals(AM, StringComparison.OrdinalIgnoreCase)
-            && !phraseLast.Equals(PM, StringComparison.OrdinalIgnoreCase)
-        )
-        {
-            return true;
-        }
-
         var afterChar = line.Slice(lastIndex + 1, 1);
-
         return afterChar.ContainsAny(Separators);
     }
 
