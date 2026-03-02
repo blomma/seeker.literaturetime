@@ -20,13 +20,7 @@ internal static class Matcher
     private static readonly SearchValues<char> Digits = SearchValues.Create("0123456789");
     private static readonly SearchValues<char> Separators = SearchValues.Create(" ,.:;");
 
-    private static ReadOnlySpan<char> Twenty => "twenty-";
-    private static ReadOnlySpan<char> Thirty => "thirty-";
-    private static ReadOnlySpan<char> Forty => "forty-";
-    private static ReadOnlySpan<char> Fifty => "fifty-";
     private static ReadOnlySpan<char> Colon => ":";
-    private static ReadOnlySpan<char> AM => "am";
-    private static ReadOnlySpan<char> PM => "pm";
 
     public static bool IsBeforeCharValid(
         ReadOnlySpan<char> line,
