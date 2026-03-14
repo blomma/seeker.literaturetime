@@ -3,7 +3,7 @@ using System.Globalization;
 
 namespace seeker.literaturetime;
 
-internal static class Phrases
+public static class Phrases
 {
     private static readonly Dictionary<int, string> NumberToWord = new()
     {

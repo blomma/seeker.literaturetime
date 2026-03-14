@@ -2,7 +2,7 @@ using System.Collections.Immutable;
 
 namespace seeker.literaturetime;
 
-internal class AhoCorasick
+public class AhoCorasick
 {
     private struct FlatNode
     {

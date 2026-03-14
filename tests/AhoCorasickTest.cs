@@ -22,9 +22,10 @@ public class AhoCorasickTest
         var text = "In the morning, it was almost midnight.";
 
         // Act
-        var results = Matcher.FindMatches(ac, text);
+        Matcher.TryFindMatches(ac, text, out var results);
 
         // Assert
+        Assert.NotNull(results);
         Assert.Equal(2, results.Count);
         Assert.Equal("In the morning", results["06:00"]);
         Assert.Equal("was almost midnight", results["12:00"]);

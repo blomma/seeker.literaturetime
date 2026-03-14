@@ -1,5 +1,6 @@
 using System.Buffers;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.Extensions.ObjectPool;
@@ -9,13 +10,33 @@ using seeker.literaturetime.models;
 
 namespace seeker.literaturetime;
 
-internal static class Matcher
+public static class Matcher
 {
     private static readonly ObjectPool<StringBuilder> StringBuilderPool =
         new DefaultObjectPoolProvider().CreateStringBuilderPool(
             initialCapacity: 1,
             maximumRetainedCapacity: 10
         );
+
+    private static readonly ObjectPool<
+        List<(string TimeKey, string Phrase, int Priority)>
+    > ResultListPool = new DefaultObjectPoolProvider().Create(
+        new ListPolicy<(string TimeKey, string Phrase, int Priority)>()
+    );
+
+    private static readonly ObjectPool<List<string>> StringListPool =
+        new DefaultObjectPoolProvider().Create(new ListPolicy<string>());
+
+    private class ListPolicy<T> : IPooledObjectPolicy<List<T>>
+    {
+        public List<T> Create() => new(16);
+
+        public bool Return(List<T> obj)
+        {
+            obj.Clear();
+            return true;
+        }
+    }
 
     private static readonly SearchValues<char> Digits = SearchValues.Create("0123456789");
     private static readonly SearchValues<char> Separators = SearchValues.Create(" ,.:;");
@@ -77,42 +98,58 @@ internal static class Matcher
         return afterChar.ContainsAny(Separators);
     }
 
-    public static Dictionary<string, string> FindMatches(
+    public static bool TryFindMatches(
         AhoCorasick combinedAutomaton,
-        ReadOnlySpan<char> line
+        ReadOnlySpan<char> line,
+        [NotNullWhen(true)] out Dictionary<string, string>? results
     )
     {
-        var foundMatches = new List<(string TimeKey, string Phrase, int Priority)>();
-        combinedAutomaton.Search(line, foundMatches);
-
-        if (foundMatches.Count == 0)
+        var foundMatches = ResultListPool.Get();
+        try
         {
-            return [];
-        }
+            combinedAutomaton.Search(line, foundMatches);
 
-        // Apply priority logic (oneOf > generic > superGeneric)
-        int minPriority = foundMatches.Min(m => m.Priority);
-
-        var results = new Dictionary<string, string>();
-        foreach (var match in foundMatches)
-        {
-            if (match.Priority == minPriority)
+            if (foundMatches.Count == 0)
             {
-                if (results.TryGetValue(match.TimeKey, out var existingPhrase))
+                results = null;
+                return false;
+            }
+
+            // Apply priority logic (oneOf > generic > superGeneric)
+            int minPriority = int.MaxValue;
+            foreach (var match in foundMatches)
+            {
+                if (match.Priority < minPriority)
                 {
-                    if (match.Phrase.Length > existingPhrase.Length)
-                    {
-                        results[match.TimeKey] = match.Phrase;
-                    }
-                }
-                else
-                {
-                    results.Add(match.TimeKey, match.Phrase);
+                    minPriority = match.Priority;
                 }
             }
-        }
 
-        return results;
+            results = [];
+            foreach (var match in foundMatches)
+            {
+                if (match.Priority == minPriority)
+                {
+                    if (results.TryGetValue(match.TimeKey, out var existingPhrase))
+                    {
+                        if (match.Phrase.Length > existingPhrase.Length)
+                        {
+                            results[match.TimeKey] = match.Phrase;
+                        }
+                    }
+                    else
+                    {
+                        results.Add(match.TimeKey, match.Phrase);
+                    }
+                }
+            }
+
+            return true;
+        }
+        finally
+        {
+            ResultListPool.Return(foundMatches);
+        }
     }
 
     public static IEnumerable<LiteratureTimeEntry> GenerateQuotesFromMatches(
@@ -141,90 +178,97 @@ internal static class Matcher
 
             if (!char.IsUpper(matchLineFirst) && string.IsNullOrEmpty(endQuote))
             {
-                var beforeLines = new List<string>();
-                var currentIndex = index;
-
-                var noOfDotsTobeFound = 2;
-
-                // Search backwards...
-                var loopCount = 0;
-                while (loopCount < 8 && currentIndex > 0)
+                var beforeLines = StringListPool.Get();
+                try
                 {
-                    currentIndex -= 1;
-                    loopCount += 1;
+                    var currentIndex = index;
 
-                    var currentLine = lines[currentIndex].Trim();
-                    if (string.IsNullOrEmpty(currentLine))
+                    var noOfDotsTobeFound = 2;
+
+                    // Search backwards...
+                    var loopCount = 0;
+                    while (loopCount < 8 && currentIndex > 0)
                     {
-                        break;
-                    }
+                        currentIndex -= 1;
+                        loopCount += 1;
 
-                    var dotIndex = currentLine.LastIndexOf('.');
-
-                    // Check for am/pm pattern
-                    var patternFound = false;
-                    if (dotIndex - 2 > 0)
-                    {
-                        var p = currentLine[dotIndex - 1].ToString().ToLowerInvariant();
-                        var pp = currentLine[dotIndex - 2].ToString().ToLowerInvariant();
-
-                        patternFound = p switch
+                        var currentLine = lines[currentIndex].Trim();
+                        if (string.IsNullOrEmpty(currentLine))
                         {
-                            "m" when pp == "." => true,
-                            "d" when pp == "n" => true,
-                            _ => patternFound,
-                        };
-                    }
+                            break;
+                        }
 
-                    if (patternFound)
-                    {
-                        beforeLines.Add(currentLine);
-                        continue;
-                    }
+                        var dotIndex = currentLine.LastIndexOf('.');
 
-                    if (dotIndex != -1)
-                    {
-                        noOfDotsTobeFound -= 1;
-                        if (noOfDotsTobeFound == 0 || noOfDotsTobeFound == 1 && loopCount >= 4)
+                        // Check for am/pm pattern
+                        var patternFound = false;
+                        if (dotIndex - 2 > 0)
                         {
-                            currentLine = currentLine[(dotIndex + 1)..].Trim();
-                            if (string.IsNullOrEmpty(currentLine))
-                            {
-                                break;
-                            }
+                            var p = char.ToLowerInvariant(currentLine[dotIndex - 1]);
+                            var pp = char.ToLowerInvariant(currentLine[dotIndex - 2]);
 
-                            // Check for a quote directly after the . and if that is all that is on the line break
-                            var currentLineFirstChar = currentLine[0];
-                            if (currentLineFirstChar is '”' or '"')
+                            patternFound = p switch
                             {
-                                currentLine = currentLine[1..].Trim();
+                                'm' when pp == '.' => true,
+                                'd' when pp == 'n' => true,
+                                _ => patternFound,
+                            };
+                        }
+
+                        if (patternFound)
+                        {
+                            beforeLines.Add(currentLine);
+                            continue;
+                        }
+
+                        if (dotIndex != -1)
+                        {
+                            noOfDotsTobeFound -= 1;
+                            if (noOfDotsTobeFound == 0 || noOfDotsTobeFound == 1 && loopCount >= 4)
+                            {
+                                currentLine = currentLine[(dotIndex + 1)..].Trim();
                                 if (string.IsNullOrEmpty(currentLine))
                                 {
                                     break;
                                 }
+
+                                // Check for a quote directly after the . and if that is all that is on the line break
+                                var currentLineFirstChar = currentLine[0];
+                                if (currentLineFirstChar is '”' or '"')
+                                {
+                                    currentLine = currentLine[1..].Trim();
+                                    if (string.IsNullOrEmpty(currentLine))
+                                    {
+                                        break;
+                                    }
+                                }
+
+                                endQuote = currentLineFirstChar switch
+                                {
+                                    '“' => "”",
+                                    '"' => "\"",
+                                    _ => endQuote,
+                                };
+
+                                beforeLines.Add(currentLine);
+
+                                break;
                             }
-
-                            endQuote = currentLineFirstChar switch
-                            {
-                                '“' => "”",
-                                '"' => "\"",
-                                _ => endQuote,
-                            };
-
-                            beforeLines.Add(currentLine);
-
-                            break;
                         }
+
+                        beforeLines.Add(currentLine);
                     }
 
-                    beforeLines.Add(currentLine);
+                    beforeLines.Reverse();
+                    foreach (var beforeLine in beforeLines)
+                    {
+                        _ = quoteString.Append(beforeLine);
+                        _ = quoteString.Append('\n');
+                    }
                 }
-
-                beforeLines.Reverse();
-                foreach (var beforeLine in beforeLines)
+                finally
                 {
-                    _ = quoteString.Append(beforeLine);
-                    _ = quoteString.Append('\n');
+                    StringListPool.Return(beforeLines);
                 }
             }
 
@@ -277,12 +321,12 @@ internal static class Matcher
                     var patternFound = false;
                     if (dotIndex - 2 > 0)
                     {
-                        var p = currentLine[dotIndex - 1].ToString().ToLowerInvariant();
-                        var pp = currentLine[dotIndex - 2].ToString().ToLowerInvariant();
+                        var p = char.ToLowerInvariant(currentLine[dotIndex - 1]);
+                        var pp = char.ToLowerInvariant(currentLine[dotIndex - 2]);
 
                         patternFound = p switch
                         {
-                            "m" when pp == "." => true,
+                            'm' when pp == '.' => true,
                             _ => patternFound,
                         };
                     }

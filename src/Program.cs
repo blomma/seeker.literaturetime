@@ -141,9 +141,7 @@ try
             parallelOptions,
             (line, _, index) =>
             {
-                var result = Matcher.FindMatches(combinedAutomaton, line);
-
-                if (result.Count > 0)
+                if (Matcher.TryFindMatches(combinedAutomaton, line, out var result))
                 {
                     matches.TryAdd(index, result);
                 }

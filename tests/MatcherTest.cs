@@ -20,9 +20,10 @@ public class MatcherTest
         var line = "It was twelve o'clock at night.";
 
         // Act
-        var result = Matcher.FindMatches(combinedAutomaton, line);
+        Matcher.TryFindMatches(combinedAutomaton, line, out var result);
 
         // Assert
+        Assert.NotNull(result);
         Assert.Single(result);
         Assert.Equal("twelve o'clock", result["12:00"]);
     }
@@ -64,9 +65,10 @@ public class MatcherTest
         var line = "It was five minutes past noon.";
 
         // Act
-        var result = Matcher.FindMatches(combinedAutomaton, line);
+        Matcher.TryFindMatches(combinedAutomaton, line, out var result);
 
         // Assert
+        Assert.NotNull(result);
         Assert.Single(result);
         Assert.Equal("past noon", result["12:00"]);
     }
@@ -248,9 +250,10 @@ public class MatcherTest
         var line = "It was midnight and one minute past.";
 
         // Act
-        var result = Matcher.FindMatches(combinedAutomaton, line);
+        Matcher.TryFindMatches(combinedAutomaton, line, out var result);
 
         // Assert
+        Assert.NotNull(result);
         // Should only return "midnight" (Priority 1) and ignore "one minute past" (Priority 2)
         Assert.Single(result);
         Assert.Equal("midnight", result["12:00"]);
@@ -273,9 +276,10 @@ public class MatcherTest
         var line = "I had a midnight snack.";
 
         // Act
-        var result = Matcher.FindMatches(combinedAutomaton, line);
+        Matcher.TryFindMatches(combinedAutomaton, line, out var result);
 
         // Assert
+        Assert.NotNull(result);
         Assert.Single(result);
         Assert.Equal("midnight snack", result["12:00"]);
     }
@@ -298,9 +302,10 @@ public class MatcherTest
         var line = "It was at midnight.";
 
         // Act
-        var result = Matcher.FindMatches(combinedAutomaton, line);
+        Matcher.TryFindMatches(combinedAutomaton, line, out var result);
 
         // Assert
+        Assert.NotNull(result);
         // Priority 1 ("midnight") should win even if Priority 2 ("at midnight") is longer.
         Assert.Single(result);
         Assert.Equal("midnight", result["12:00"]);
@@ -320,9 +325,10 @@ public class MatcherTest
         var line = "It was midnight sharp.";
 
         // Act
-        var result = Matcher.FindMatches(combinedAutomaton, line);
+        Matcher.TryFindMatches(combinedAutomaton, line, out var result);
 
         // Assert
+        Assert.NotNull(result);
         Assert.Single(result);
         Assert.Equal("midnight sharp", result["12:00"]);
     }
