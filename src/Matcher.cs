@@ -78,31 +78,41 @@ internal static class Matcher
     }
 
     public static Dictionary<string, string> FindMatches(
-        AhoCorasick oneOfAutomaton,
-        AhoCorasick genericAutomaton,
-        AhoCorasick superGenericAutomaton,
+        AhoCorasick combinedAutomaton,
         ReadOnlySpan<char> line
     )
     {
-        var matches = new Dictionary<string, string>();
+        var foundMatches = new List<(string TimeKey, string Phrase, int Priority)>();
+        combinedAutomaton.Search(line, foundMatches);
 
-        oneOfAutomaton.Search(line, matches);
-
-        if (matches.Count > 0)
+        if (foundMatches.Count == 0)
         {
-            return matches;
+            return [];
         }
 
-        genericAutomaton.Search(line, matches);
+        // Apply priority logic (oneOf > generic > superGeneric)
+        int minPriority = foundMatches.Min(m => m.Priority);
 
-        if (matches.Count > 0)
+        var results = new Dictionary<string, string>();
+        foreach (var match in foundMatches)
         {
-            return matches;
+            if (match.Priority == minPriority)
+            {
+                if (results.TryGetValue(match.TimeKey, out var existingPhrase))
+                {
+                    if (match.Phrase.Length > existingPhrase.Length)
+                    {
+                        results[match.TimeKey] = match.Phrase;
+                    }
+                }
+                else
+                {
+                    results.Add(match.TimeKey, match.Phrase);
+                }
+            }
         }
 
-        superGenericAutomaton.Search(line, matches);
-
-        return matches;
+        return results;
     }
 
     public static IEnumerable<LiteratureTimeEntry> GenerateQuotesFromMatches(

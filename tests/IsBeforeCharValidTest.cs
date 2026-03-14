@@ -62,6 +62,34 @@ public class IsBeforeCharValidTest
         Assert.True(result);
     }
 
+    [Theory]
+    [InlineData("midnight", "It was,midnight")]
+    [InlineData("midnight", "It was.midnight")]
+    [InlineData("midnight", "It was:midnight")]
+    [InlineData("midnight", "It was;midnight")]
+    [InlineData("midnight", "It was midnight")]
+    public void IsBeforeCharValid_ShouldReturnTrue_WhenValidSeparators(string phrase, string line)
+    {
+        var startIndex = line.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
+        var result = Matcher.IsBeforeCharValid(line, phrase, startIndex);
+
+        Assert.True(result);
+    }
+
+    [Theory]
+    [InlineData("midnight", "It was-midnight")]
+    [InlineData("midnight", "It was_midnight")]
+    public void IsBeforeCharValid_ShouldReturnFalse_WhenInvalidSeparators(
+        string phrase,
+        string line
+    )
+    {
+        var startIndex = line.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
+        var result = Matcher.IsBeforeCharValid(line, phrase, startIndex);
+
+        Assert.False(result);
+    }
+
     [Fact]
     public void IsBeforeCharValid_ShouldReturnFalse_WhenStartIndexIsMinus1()
     {

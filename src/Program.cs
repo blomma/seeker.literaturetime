@@ -17,9 +17,11 @@ files = [.. files.OrderByDescending(s => s.Length)];
 var (timePhrasesOneOf, timePhrasesGenericOneOf, timePhrasesSuperGenericOneOf) =
     Phrases.GeneratePhrases();
 
-var oneOfAutomaton = AhoCorasick.CreateAutomaton(timePhrasesOneOf);
-var genericAutomaton = AhoCorasick.CreateAutomaton(timePhrasesGenericOneOf);
-var superGenericAutomaton = AhoCorasick.CreateAutomaton(timePhrasesSuperGenericOneOf);
+var combinedAutomaton = AhoCorasick.CreateCombinedAutomaton(
+    timePhrasesOneOf,
+    timePhrasesGenericOneOf,
+    timePhrasesSuperGenericOneOf
+);
 
 Data.PersistPhrases(
     timePhrasesOneOf,
@@ -139,12 +141,7 @@ try
             parallelOptions,
             (line, _, index) =>
             {
-                var result = Matcher.FindMatches(
-                    oneOfAutomaton,
-                    genericAutomaton,
-                    superGenericAutomaton,
-                    line
-                );
+                var result = Matcher.FindMatches(combinedAutomaton, line);
 
                 if (result.Count > 0)
                 {
